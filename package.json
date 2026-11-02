@@ -1,0 +1,21 @@
+{
+  "name": "sprig",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "sprig": "src/cli.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "build": "bun build src/cli.ts --compile --outfile dist/sprig"
+  },
+  "dependencies": {
+    "@withfig/autocomplete": "2.692.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@withfig/autocomplete-types": "^1.31.0",
+    "typescript": "^7.0.2"
+  }
+}
