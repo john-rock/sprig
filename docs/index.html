@@ -106,7 +106,7 @@ h1 {
 }
 .status.you { color: var(--ic-opt); }
 .term-body { position: relative; height: 380px; padding: 14px 16px; display: flex; flex-direction: column; overflow: hidden; }
-.scroll { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.scroll { flex: 0 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
 .spacer { flex: none; height: calc(9 * 1.55em + 4px); }
 .ln { white-space: pre-wrap; word-break: break-all; min-height: 1.55em; }
 .ln.dim { color: var(--term-dim); }
@@ -182,7 +182,13 @@ h3 { font: 600 1.05rem/1.3 var(--f-body); margin: 0; }
 .code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-size: .85rem; line-height: 1.7; }
 .code .c { color: var(--term-dim); }
 .step.agent { grid-column: 1 / -1; }
-.code pre.prompt { white-space: pre-wrap; padding-right: 110px; }
+.code pre.prompt { white-space: pre-wrap; padding-top: 0; padding-right: 110px; }
+.code summary { list-style: none; cursor: pointer; padding: 14px 120px 14px 16px; font: .85rem/1.7 var(--f-mono); color: var(--term-dim); user-select: none; }
+.code summary::-webkit-details-marker { display: none; }
+.code summary:hover { color: var(--term-fg); }
+.code summary::before { content: "▸ "; color: var(--prompt-arrow); }
+.code details[open] summary::before { content: "▾ "; }
+.code details[open] .show, .code details:not([open]) .hide { display: none; }
 .code .d { color: var(--prompt-arrow); user-select: none; }
 .copy {
   position: absolute; top: 8px; right: 8px; font: 600 .75rem/1 var(--f-body);
@@ -197,13 +203,22 @@ h3 { font: 600 1.05rem/1.3 var(--f-body); margin: 0; }
 .wire { display: grid; justify-items: center; gap: 4px; font: 400 .78rem/1.2 var(--f-mono); color: var(--muted); text-align: center; }
 .wire .line { width: 90px; height: 2px; background: repeating-linear-gradient(90deg, var(--leaf) 0 8px, transparent 8px 13px); background-size: 26px 2px; animation: flow 1s linear infinite; }
 @keyframes flow { to { background-position: 26px 0; } }
-.sub code, td code, .step code { font-size: .86em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+.sub code, td code, .step code, .hint code { font-size: .86em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
 
 .tbl { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: .95rem; }
 th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
 th { font: 600 .75rem/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 td:last-child { color: var(--muted); }
+
+.release { display: grid; grid-template-columns: 150px 1fr; gap: 10px 28px; }
+.rel-head { display: grid; gap: 8px; align-content: start; justify-items: start; }
+.rel-head .ver { font: 800 1.5rem/1 var(--f-display); letter-spacing: -.02em; }
+.rel-head .date { font: 400 .8rem/1 var(--f-mono); color: var(--muted); }
+.rel-head .soon { margin-left: 0; }
+.release ul { margin: 0; padding-left: 1.1em; display: grid; gap: 8px; color: var(--muted); font-size: .95rem; }
+.release li::marker { color: var(--leaf); }
+.release code { font-size: .86em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
 
 footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rule); padding-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
 
@@ -212,6 +227,8 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   .term { font-size: 12.5px; }
   .term-body { height: 360px; padding: 12px; }
   .flow { grid-template-columns: 1fr; }
+  .release { grid-template-columns: 1fr; }
+  .rel-head { grid-auto-flow: column; align-items: baseline; }
   .wire .line { width: 2px; height: 34px; background: repeating-linear-gradient(180deg, var(--leaf) 0 8px, transparent 8px 13px); }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -263,7 +280,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
         <button class="pk-btn" data-key="Enter">Enter</button>
         <button class="pk-btn" data-key="Escape">Esc</button>
       </div>
-      <p class="hint">click the terminal and type something. tab picks, enter runs. nothing actually runs here, it's just a demo with a handful of commands.</p>
+      <p class="hint">click the terminal and type something. tab picks, enter runs. every command in the dropdown does something (all pretend, all in your browser). a few hidden ones too. type <code>help</code>.</p>
     </div>
   </header>
 
@@ -284,17 +301,36 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
       </div>
       <div class="step agent">
         <h3>have your agent install it</h3>
-        <p>using claude code, codex, cursor or another coding agent? copy this prompt and paste it in. it clones the repo, runs the installer and checks the setup with <code>sprig doctor</code>.</p>
-        <div class="code"><button class="copy" data-copy="Install sprig (https://github.com/john-rock/sprig), an IDE-style autocomplete dropdown for zsh, on this machine.&#10;&#10;1. Check that zsh, git and Bun (https://bun.sh) are installed. If Bun is missing, ask me before installing it.&#10;2. Clone the repo somewhere sensible, like ~/src/sprig, and run scripts/install.sh from inside the checkout.&#10;3. If the script says ~/.local/bin is not on my PATH, add it in ~/.zshrc.&#10;4. Run `sprig doctor` and fix anything it reports.&#10;5. Don&#x27;t change ~/.zshrc beyond that. When you&#x27;re done, tell me to open a new terminal tab (or run `exec zsh`) to start using it.">copy prompt</button><pre class="prompt">Install sprig (https://github.com/john-rock/sprig), an IDE-style autocomplete dropdown for zsh, on this machine.
+        <p>using claude code, codex, cursor or another coding agent? copy the prompt and paste it in. it clones the repo, runs the installer and checks the setup with <code>sprig doctor</code>.</p>
+        <div class="code"><button class="copy" data-copy="Install sprig (https://github.com/john-rock/sprig), an IDE-style autocomplete dropdown for zsh, on this machine.&#10;&#10;1. Check that zsh, git and Bun (https://bun.sh) are installed. If Bun is missing, ask me before installing it.&#10;2. Clone the repo somewhere sensible, like ~/src/sprig, and run scripts/install.sh from inside the checkout.&#10;3. If the script says ~/.local/bin is not on my PATH, add it in ~/.zshrc.&#10;4. Run `sprig doctor` and fix anything it reports.&#10;5. Don&#x27;t change ~/.zshrc beyond that. When you&#x27;re done, tell me to open a new terminal tab (or run `exec zsh`) to start using it.">copy prompt</button><details><summary><span class="show">show the prompt</span><span class="hide">hide the prompt</span></summary><pre class="prompt">Install sprig (https://github.com/john-rock/sprig), an IDE-style autocomplete dropdown for zsh, on this machine.
 
 1. Check that zsh, git and Bun (https://bun.sh) are installed. If Bun is missing, ask me before installing it.
 2. Clone the repo somewhere sensible, like ~/src/sprig, and run scripts/install.sh from inside the checkout.
 3. If the script says ~/.local/bin is not on my PATH, add it in ~/.zshrc.
 4. Run `sprig doctor` and fix anything it reports.
-5. Don't change ~/.zshrc beyond that. When you're done, tell me to open a new terminal tab (or run `exec zsh`) to start using it.</pre></div>
+5. Don't change ~/.zshrc beyond that. When you're done, tell me to open a new terminal tab (or run `exec zsh`) to start using it.</pre></details></div>
       </div>
     </div>
     <p class="sub">something acting weird? run <code>sprig doctor</code>. daemon logs live in <code>~/.local/state/sprig/daemon.log</code>. still stuck? <a href="https://github.com/john-rock/sprig/issues" target="_blank" rel="noopener">open an issue on github</a>.</p>
+  </section>
+
+  <section>
+    <h2>release notes</h2>
+    <article class="release">
+      <div class="rel-head">
+        <span class="ver">0.1.0</span>
+        <span class="date">nov 2, 2026</span>
+        <span class="soon">latest</span>
+      </div>
+      <ul>
+        <li>first release. a dropdown under your cursor with subcommands, options, branches, files and descriptions for 700+ clis, built on fig's open-source specs.</li>
+        <li>no terminal wrapper. zsh's own line editor draws the dropdown, so scrollback, resizing, tmux and ssh work like normal.</li>
+        <li>the daemon starts with your first shell, quits after an hour idle and never blocks typing.</li>
+        <li>suggestions you pick rank higher next time.</li>
+        <li>your own specs in <code>~/.config/sprig/specs/</code> override the built-in ones.</li>
+        <li><code>sprig install</code>, <code>sprig uninstall</code> and <code>sprig doctor</code> to set up, remove and check it.</li>
+      </ul>
+    </article>
   </section>
 
   <section>
@@ -328,7 +364,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   </section>
 
   <footer>
-    <span>sprig 0.1.0 · mit license</span>
+    <span>sprig 0.1.0 · mit license · <a href="https://github.com/john-rock/sprig" target="_blank" rel="noopener">github</a></span>
     <span>completion specs © fig/hercules labs and contributors (mit). parser behavior follows <a href="https://github.com/microsoft/inshellisense" target="_blank" rel="noopener">inshellisense</a>.</span>
   </footer>
 </div>
@@ -345,7 +381,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
       status: { d: "Show the working tree status", opts: [["-s", "Short format"], ["-b", "Show branch info"]] },
       switch: { d: "Switch branches", args: "branches", opts: [["-c", "Create a new branch", 1]] },
       branch: { d: "List, create, or delete branches", opts: [["-d", "Delete a branch", 1], ["-a", "List all branches"]] },
-      add: { d: "Add file contents to the index", args: "files", opts: [["-p", "Choose hunks interactively"], ["-A", "Add all changes"]] },
+      add: { d: "Add file contents to the index", args: "files", many: 1, opts: [["-p", "Choose hunks interactively"], ["-A", "Add all changes"]] },
       diff: { d: "Show changes between commits", opts: [["--staged", "Compare staged changes"], ["--stat", "Show a diffstat"]] },
       log: { d: "Show commit logs", opts: [["--oneline", "One line per commit"], ["--graph", "Draw the history graph"]] },
       push: { d: "Update remote refs", args: "remotes", opts: [["--force-with-lease", "Force, but only if nobody else pushed"], ["-u", "Set upstream"]] },
@@ -380,32 +416,62 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     brew: { d: "The missing package manager for macOS", subs: {
       install: { d: "Install a formula or cask" }, upgrade: { d: "Upgrade outdated formulae" },
       list: { d: "List installed formulae" }, search: { d: "Search for formulae" }, doctor: { d: "Check your system for problems" },
-      services: { d: "Manage background services", subs: { start: { d: "Start a service now and at login" }, stop: { d: "Stop a service" }, list: { d: "List all services" } } },
+      services: { d: "Manage background services", subs: { start: { d: "Start a service now and at login", args: "services" }, stop: { d: "Stop a service", args: "services" }, list: { d: "List all services" } } },
     } },
     cd: { d: "Change the working directory", args: "dirs" },
-    ls: { d: "List directory contents", args: "dirs", opts: [["-l", "Long format"], ["-a", "Include dotfiles"], ["-h", "Human-readable sizes"]] },
+    ls: { d: "List directory contents", args: "dirs", many: 1, opts: [["-l", "Long format"], ["-a", "Include dotfiles"], ["-h", "Human-readable sizes"]] },
     sprig: { d: "Autocomplete for zsh", subs: {
       doctor: { d: "Check the setup" }, install: { d: "Add sprig to ~/.zshrc" },
       uninstall: { d: "Remove sprig and stop the daemon" }, complete: { d: "Print completions without a shell" } } },
     clear: { d: "Clear the terminal screen" },
   };
-  const COMMITS = [["4f2a9c1", "Fix cursor column on wide chars"], ["b81e0d7", "Rank typo matches below prefixes"], ["9c03aa2", "Stop daemon after an hour idle"]];
   const SCRIPTS = { dev: "bun --watch src/cli.ts", build: "scripts/build.sh", test: "bun test", lint: "tsc --noEmit" };
-  const BRANCHES = ["main", "feature/dropdown", "fix/tab-fallthrough", "chore/bump-specs"];
+  const CONTAINERS = ["api-1", "db-1", "web-1"];
   const GEN = {
-    branches: () => BRANCHES.map(b => ({ name: b, desc: b === st.branch ? "current branch" : "branch", kind: "arg" })),
-    commits: () => COMMITS.map(([h, m]) => ({ name: h, desc: m, kind: "arg" })),
+    branches: () => st.branches.map(b => ({ name: b, desc: b === st.branch ? "current branch" : "branch", kind: "arg" })),
+    commits: () => st.commits.map(([h, m]) => ({ name: h, desc: m, kind: "arg" })),
     scripts: () => Object.entries(SCRIPTS).map(([k, v]) => ({ name: k, desc: v, kind: "special" })),
-    dirs: () => ["src/", "test/", "scripts/", "shell/", "../"].map(n => ({ name: n, desc: "folder", kind: "dir" })),
-    files: () => [["README.md", "file"], ["src/cli.ts", "modified"], ["shell/sprig.zsh", "modified"], ["src/", "folder"]].map(([n, d]) => ({ name: n, desc: d, kind: n.endsWith("/") ? "dir" : "file" })),
-    containers: () => ["api-1", "db-1", "web-1"].map(n => ({ name: n, desc: "running", kind: "arg" })),
+    dirs: cur => inDir(cur).filter(n => n.endsWith("/")).concat(cur.includes("/") || st.cwd === "~" ? [] : ["../"])
+      .map(n => ({ name: n, desc: "folder", kind: "dir" })),
+    files: cur => [...new Map([...st.mod.map(f => [f, "modified"]), ...st.staged.map(f => [f, "staged"]),
+      ...inDir(cur).map(n => [n, n.endsWith("/") ? "folder" : "file"])]).entries()]
+      .map(([n, d]) => ({ name: n, desc: d, kind: n.endsWith("/") ? "dir" : "file" })),
+    containers: () => CONTAINERS.map(n => ({ name: n, desc: st.up ? "running" : "stopped", kind: "arg" })),
+    services: () => Object.entries(st.svc).map(([n, s]) => ({ name: n, desc: s === "started" ? "started" : "stopped", kind: "arg" })),
     remotes: () => [["origin", "github.com/john-rock/sprig"], ["upstream", "remote"]].map(([n, d]) => ({ name: n, desc: d, kind: "arg" })),
   };
-  const GEN_SRC = { branches: "git branch", commits: "git log", scripts: "package.json", dirs: "ls", files: "git status", containers: "docker ps", remotes: "git remote" };
+  // entries of the folder named by the word so far, keeping its prefix ("src/" -> "src/cli.ts", ...)
+  function inDir(cur) {
+    const base = cur.slice(0, cur.lastIndexOf("/") + 1);
+    const names = st.fs[base ? resolve(base) : st.cwd] || [];
+    return names.filter(n => n[0] !== "." || cur.slice(base.length).startsWith(".")).map(n => base + n);
+  }
+  const GEN_SRC = { branches: "git branch", commits: "git log", scripts: "package.json", dirs: "ls", files: "git status", containers: "docker ps", remotes: "git remote", services: "brew services" };
   const ICON = { sub: "›", opt: "-", dir: "▸", file: "·", arg: "•", special: "★" };
 
   // ---------- state ----------
-  const st = { line: "", sel: 0, items: [], open: false, escAt: -1, key: "", cwd: "~/dev/sprig", branch: "main", usage: {}, hist: [], hi: -1, out: [] };
+  // everything a command can change lives in fresh(), so the autoplay loop can reset it
+  const REPO = "~/dev/sprig";
+  const fresh = () => ({
+    cwd: REPO, branch: "main", off: false, ahead: 0, up: true, upgraded: false,
+    branches: ["main", "feature/dropdown", "fix/tab-fallthrough", "chore/bump-specs"], pushed: ["main"],
+    commits: [["4f2a9c1", "Fix cursor column on wide chars"], ["b81e0d7", "Rank typo matches below prefixes"], ["9c03aa2", "Stop daemon after an hour idle"]],
+    mod: ["src/cli.ts", "shell/sprig.zsh"], staged: [], stash: [],
+    images: [["sprig-api", "latest", "3f9a2c1e8b07", "212MB"], ["sprig-web", "latest", "8c1d04b2a9e3", "98MB"], ["postgres", "16", "b9a6d1f0c4e2", "438MB"]],
+    formulae: ["bun", "fzf", "gh", "git", "jq", "postgresql@16", "redis", "ripgrep", "zsh"],
+    svc: { "postgresql@16": "none", redis: "started" },
+    fs: {
+      "~": [".config/", ".zshrc", "dev/"], "~/.config": ["sprig/"], "~/.config/sprig": ["specs/"], "~/.config/sprig/specs": [],
+      "~/dev": ["sprig/"],
+      [REPO]: [".gitignore", "README.md", "package.json", "scripts/", "shell/", "src/", "test/"],
+      [REPO + "/src"]: ["cli.ts", "daemon/", "engine/", "paths.ts", "setup.ts"],
+      [REPO + "/src/daemon"]: ["log.ts", "protocol.ts", "server.ts", "usage.ts"],
+      [REPO + "/src/engine"]: ["complete.ts", "exec.ts", "generators.ts", "parser.ts", "rank.ts", "specLoader.ts", "tokenizer.ts"],
+      [REPO + "/test"]: ["engine.test.ts", "harness/", "integration.test.ts"], [REPO + "/test/harness"]: ["screen.py"],
+      [REPO + "/scripts"]: ["build.sh", "install.sh"], [REPO + "/shell"]: ["sprig.zsh"],
+    },
+  });
+  const st = { line: "", sel: 0, items: [], open: false, escAt: -1, key: "", usage: {}, hist: [], hi: -1, out: [], ...fresh() };
   const $ = id => document.getElementById(id);
   const term = $("term"), input = $("term-input"), curLine = $("cur-line"), scroll = $("scroll"), keycap = $("keycap"), status = $("status");
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -422,14 +488,16 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     let node = SPECS[done[0]];
     if (!node) return null;
     const path = [done[0]];
-    let skip = false;
+    let skip = false, argc = 0, used = [];
     for (const t of done.slice(1)) {
       if (skip) { skip = false; continue; }
-      if (node.subs && node.subs[t]) { node = node.subs[t]; path.push(t); continue; }
+      if (!argc && node.subs && node.subs[t]) { node = node.subs[t]; path.push(t); used = []; continue; }
       const o = (node.opts || []).find(o => o[0] === t);
-      if (o && o[2]) skip = true;
+      if (o) { used.push(t); if (o[2]) skip = true; continue; }
+      if (t.startsWith("-")) continue;
+      argc++; used.push(t);
     }
-    return skip ? { kind: "freearg", path } : { kind: "node", node, path };
+    return skip ? { kind: "freearg", path } : { kind: "node", node, path, argc, used };
   }
   function lev(a, b) {
     const m = a.length, n = b.length, d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
@@ -452,12 +520,14 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     if (ctx.kind === "root") {
       list = Object.entries(SPECS).map(([n, s]) => ({ name: n, desc: s.d, kind: "sub" }));
     } else {
-      const n = ctx.node, opts = (n.opts || []).map(o => ({ name: o[0], desc: o[1], kind: "opt", arg: !!o[2] }));
+      const n = ctx.node, opts = (n.opts || []).filter(o => !ctx.used.includes(o[0])).map(o => ({ name: o[0], desc: o[1], kind: "opt", arg: !!o[2] }));
+      const argsOpen = n.args && (n.many || ctx.argc === 0);
       if (current.startsWith("-")) list = opts;
+      else if (ctx.argc && !argsOpen) list = [];
       else {
-        if (n.subs) list.push(...Object.entries(n.subs).map(([k, v]) => ({ name: k, desc: v.d, kind: "sub" })));
-        if (n.args) { list.push(...GEN[n.args]()); src = GEN_SRC[n.args]; }
-        if (!list.length) list = opts;
+        if (n.subs && !ctx.argc) list.push(...Object.entries(n.subs).map(([k, v]) => ({ name: k, desc: v.d, kind: "sub" })));
+        if (argsOpen) { list.push(...GEN[n.args](current).filter(it => !ctx.used.includes(it.name))); src = GEN_SRC[n.args]; }
+        if (!list.length && !ctx.argc) list = opts;
       }
     }
     const scoreKey = it => ctx.path.concat(it.name).join(" ");
@@ -475,11 +545,13 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   }
 
   // ---------- rendering ----------
-  const promptText = () => `${st.cwd} ${st.branch} ❯ `;
-  const promptHTML = () => `<span class="p-dir">${esc(st.cwd)}</span> <span class="p-br">${esc(st.branch)}</span> <span class="p-arrow">❯</span> `;
+  const inRepo = () => st.cwd === REPO || st.cwd.startsWith(REPO + "/");
+  const promptText = () => `${st.cwd} ${inRepo() ? st.branch + " " : ""}❯ `;
+  const promptHTML = () => `<span class="p-dir">${esc(st.cwd)}</span> ${inRepo() ? `<span class="p-br">${esc(st.branch)}</span> ` : ""}<span class="p-arrow">❯</span> `;
 
   function update(resetSel) {
-    const r = suggest(st.line);
+    // after `sprig uninstall` there's no dropdown, same as the real thing
+    const r = st.off ? { items: [], start: parse(st.line).start, current: "", ctx: null } : suggest(st.line);
     const key = r.start + "|" + r.current;
     if (key !== st.key || resetSel) { st.sel = 0; st.key = key; }
     if (st.escAt !== r.start) st.escAt = -1;
@@ -526,63 +598,506 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     input.value = st.line;
     update(true);
   }
+  // output can include { w: ms } entries, which pause before the next line prints
+  let job = null;
+  function flush() {
+    if (!job) return;
+    const q = job; job = null;
+    print(q.filter(l => !(l && l.w !== undefined)));
+  }
+  function play(lines) {
+    flush();
+    const q = [...lines];
+    job = q;
+    (async () => {
+      while (job === q && q.length) {
+        const l = q.shift();
+        if (l && l.w !== undefined) await sleep(l.w);
+        else if (job === q) print([l]);
+      }
+      if (job === q) job = null;
+    })();
+  }
   function run() {
     const line = st.line.trim();
+    flush();
     print([{ h: promptHTML() + esc(st.line) }]);
     st.line = ""; input.value = ""; st.escAt = -1; st.hi = -1;
     if (line) st.hist.push(line);
     const out = simulate(line);
-    if (out === "clear") { st.out = []; print([]); } else print(out);
+    if (out === "clear") { st.out = []; print([]); } else play(out);
     update(true);
   }
+
+  // ---------- pretend commands ----------
+  const L = (t, c) => ({ t, c }), ok = t => L(t, "ok"), err = t => L(t, "err"), dim = t => L(t, "dim"), W = w => ({ w });
+  const arrow = t => ({ h: `<span class="p-dir">==&gt;</span> <b>${esc(t)}</b>` });
+  const hex = n => Array.from({ length: n }, () => "0123456789abcdef"[Math.random() * 16 | 0]).join("");
+  const unq = s => (s || "").replace(/^(["'])(.*)\1$/, "$2");
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const closest = (w, list) => list.filter(x => lev(w, x) <= 2).sort((a, b) => lev(w, a) - lev(w, b))[0];
+  // non-option words, skipping the value after options that take one
+  function pos(toks, opts = []) {
+    const out = [];
+    for (let i = 0; i < toks.length; i++) {
+      if (toks[i].startsWith("-")) { if ((opts.find(o => o[0] === toks[i]) || [])[2]) i++; continue; }
+      out.push(unq(toks[i]));
+    }
+    return out;
+  }
+  const optVal = (toks, f) => { const i = toks.indexOf(f); return i >= 0 ? unq(toks[i + 1]) : undefined; };
+  function resolve(p) {
+    if (p.startsWith("/")) return null;
+    const out = [];
+    for (const x of (p === "~" || p.startsWith("~/") ? p : st.cwd + "/" + p).split("/").filter(Boolean)) {
+      if (x === ".") continue;
+      if (x === "..") { if (out.length > 1) out.pop(); } else out.push(x);
+    }
+    return out.join("/");
+  }
+  const hasPkg = () => (st.fs[st.cwd] || []).includes("package.json");
+  const noPkg = () => [err("npm error code ENOENT"), err(`npm error enoent Could not read package.json in ${st.cwd}`), dim("(try cd ~/dev/sprig first)")];
+  const notRepo = () => [err("fatal: not a git repository (or any of the parent directories): .git")];
+
+  const VERSIONS = { git: "git version 2.47.1", npm: "10.9.2", docker: "Docker version 27.3.1, build ce12230", brew: "Homebrew 4.4.2", sprig: "sprig 0.1.0" };
+  const UNKNOWN = {
+    git: (s, m) => [err(`git: '${s}' is not a git command. See 'git --help'.`), ...(m ? ["", "The most similar command is", `        ${m}`] : [])],
+    npm: (s, m) => [err(`Unknown command: "${s}"`), ...(m ? ["", "Did you mean this?", `    npm ${m}`] : [])],
+    docker: (s, m) => [err(`docker: unknown command: docker ${s}`), ...(m ? ["", `Did you mean docker ${m}?`] : [])],
+    brew: (s, m) => [err(`Error: Unknown command: brew ${s}`), ...(m ? [dim(`did you mean brew ${m}?`)] : [])],
+    sprig: (s, m) => [err(`sprig: unknown command '${s}'`), ...(m ? [dim(`did you mean sprig ${m}?`)] : [])],
+  };
+  // run table[sub](rest), with usage for no subcommand and a did-you-mean for typos
+  function dispatch(name, table, toks, unknown) {
+    const [sub, ...rest] = toks;
+    if (sub === "--version" || sub === "-v") return [VERSIONS[name]];
+    if (!sub || sub === "-h" || sub === "--help") return table[""](rest);
+    if (table[sub]) return table[sub](rest);
+    return (unknown || UNKNOWN[name])(sub, closest(sub, Object.keys(table).filter(Boolean)));
+  }
+
+  // ----- git -----
+  const HUNKS = {
+    "src/cli.ts": ["-const MAX_ROWS = 8;", "+const MAX_ROWS = Number(process.env.SPRIG_MAX_ROWS ?? 8);"],
+    "shell/sprig.zsh": ["-  zle -R", "+  zle -R -c"],
+  };
+  function gitStatus(rest) {
+    const b = st.branch;
+    if (rest.includes("-s")) return [
+      ...(rest.includes("-b") ? [`## ${b}...origin/${b}${st.ahead ? ` [ahead ${st.ahead}]` : ""}`] : []),
+      ...st.staged.map(f => ok(`M  ${f}`)), ...st.mod.map(f => err(` M ${f}`)),
+    ];
+    const out = [`On branch ${b}`];
+    if (st.ahead) out.push(`Your branch is ahead of 'origin/${b}' by ${plural(st.ahead, "commit")}.`);
+    if (st.staged.length) out.push("Changes to be committed:", ...st.staged.map(f => ok(`        modified:   ${f}`)));
+    if (st.mod.length) out.push("Changes not staged for commit:", ...st.mod.map(f => err(`        modified:   ${f}`)));
+    if (!st.staged.length && !st.mod.length) out.push("nothing to commit, working tree clean");
+    return out;
+  }
+  function commit(rest) {
+    const b = st.branch, all = rest.includes("-a") || rest.includes("-am");
+    const mi = rest.findIndex(x => x === "-m" || x === "-am");
+    const msg = mi >= 0 ? unq(rest[mi + 1]) : "";
+    if (rest.includes("--amend")) {
+      const h = hex(7), m = msg || st.commits[0][1];
+      st.commits[0] = [h, m]; st.staged = [];
+      return [`[${b} ${h}] ${m}`, dim(" Date: just now (amended, nobody saw a thing)")];
+    }
+    const files = all ? [...st.staged, ...st.mod] : st.staged;
+    if (!files.length) return st.mod.length
+      ? [`On branch ${b}`, err('no changes added to commit (use "git add" and/or "git commit -a")')]
+      : [`On branch ${b}`, "nothing to commit, working tree clean"];
+    if (!msg) return [dim("hint: Waiting for your editor to close the file..."), err("Aborting commit due to empty commit message.")];
+    const h = hex(7), n = files.length;
+    st.commits.unshift([h, msg]); st.ahead++; st.staged = [];
+    if (all) st.mod = [];
+    return [`[${b} ${h}] ${msg}`, ` ${plural(n, "file")} changed, ${n * 9} insertions(+), ${n * 2} deletions(-)`,
+      ...(rest.includes("--no-verify") ? [dim("(skipped the pre-commit hooks. bold move.)")] : [])];
+  }
+  function checkout(rest, flag) {
+    const b = st.branch, create = rest.includes(flag);
+    const target = rest.filter(x => !x.startsWith("-")).map(unq).pop();
+    if (!target) return [err(flag === "-b" ? "fatal: you must specify a branch" : "fatal: missing branch or commit argument")];
+    if (create) {
+      if (st.branches.includes(target)) return [err(`fatal: a branch named '${target}' already exists`)];
+      st.branches.push(target); st.branch = target;
+      return [`Switched to a new branch '${target}'`];
+    }
+    if (st.branches.includes(target)) { st.branch = target; return [target === b ? `Already on '${target}'` : `Switched to branch '${target}'`]; }
+    if (flag === "-b" && st.mod.includes(target)) { st.mod = st.mod.filter(f => f !== target); return ["Updated 1 path from the index"]; }
+    const m = closest(target, st.branches);
+    return [err(`error: pathspec '${target}' did not match any file(s) known to git`), ...(m ? [dim(`did you mean '${m}'?`)] : [])];
+  }
+  const git = {
+    "": () => [dim("usage: git [-v | --version] [-h | --help] <command> [<args>]"), "", "start with: git status, git log, git checkout"],
+    status: gitStatus,
+    commit,
+    checkout: rest => checkout(rest, "-b"),
+    switch: rest => checkout(rest, "-c"),
+    add: rest => {
+      const files = pos(rest);
+      if (rest.includes("-p")) {
+        if (!st.mod.length) return ["No changes."];
+        const f = st.mod[0], [del, add] = HUNKS[f] || ["-old", "+new"];
+        st.staged.push(f); st.mod = st.mod.slice(1);
+        return [L(`diff --git a/${f} b/${f}`, "dim"), err(del), ok(add), "(1/1) Stage this hunk [y,n,q,a,d,e,?]? y", dim("(we answered for you)")];
+      }
+      if (rest.includes("-A") || files.includes(".")) { st.staged.push(...st.mod); st.mod = []; return []; }
+      if (!files.length) return ["Nothing specified, nothing added.", dim("hint: Maybe you wanted to say 'git add .'?")];
+      for (const f of files) {
+        if (st.mod.includes(f)) { st.mod = st.mod.filter(x => x !== f); st.staged.push(f); }
+        else if (!st.staged.includes(f) && !(st.fs[st.cwd] || []).includes(f)) return [err(`fatal: pathspec '${f}' did not match any files`)];
+      }
+      return [];
+    },
+    diff: rest => {
+      const pick = pos(rest), files = (rest.includes("--staged") ? st.staged : st.mod).filter(f => !pick.length || pick.includes(f));
+      if (rest.includes("--stat")) return files.length
+        ? [...files.map(f => ` ${f.padEnd(16)}| 2 +-`), ` ${plural(files.length, "file")} changed, ${files.length} insertions(+), ${files.length} deletions(-)`]
+        : [];
+      return files.flatMap(f => { const [del, add] = HUNKS[f] || ["-old", "+new"]; return [{ h: `<b>diff --git a/${esc(f)} b/${esc(f)}</b>` }, err(del), ok(add)]; });
+    },
+    log: rest => st.commits.slice(0, 5).map(([h, m], i) => ({
+      h: `${rest.includes("--graph") ? '<span class="p-br">*</span> ' : ""}<span class="p-br">${h}</span> ${i === 0 ? `<span class="p-dir">(HEAD -&gt; ${esc(st.branch)})</span> ` : ""}${esc(m)}`,
+    })),
+    branch: rest => {
+      const d = optVal(rest, "-d"), name = pos(rest, [["-d", "", 1]])[0];
+      if (rest.includes("-d")) {
+        if (!d) return [err("fatal: branch name required")];
+        if (d === st.branch) return [err(`error: cannot delete branch '${d}' used by worktree at '${REPO}'`)];
+        if (!st.branches.includes(d)) return [err(`error: branch '${d}' not found`)];
+        st.branches = st.branches.filter(b => b !== d);
+        return [`Deleted branch ${d} (was ${st.commits[0][0]}).`];
+      }
+      if (name) {
+        if (st.branches.includes(name)) return [err(`fatal: a branch named '${name}' already exists`)];
+        st.branches.push(name); return [];
+      }
+      return [...st.branches.map(b => b === st.branch ? ok(`* ${b}`) : `  ${b}`), ...(rest.includes("-a") ? [err("  remotes/origin/main")] : [])];
+    },
+    "cherry-pick": rest => {
+      const x = pos(rest)[0];
+      if (!x) return [err("usage: git cherry-pick <commit>...")];
+      const c = st.commits.find(([h]) => h.startsWith(x));
+      if (!c) return [err(`fatal: bad revision '${x}'`)];
+      const h = hex(7);
+      st.commits.unshift([h, c[1]]); st.ahead++;
+      return [`[${st.branch} ${h}] ${c[1]}`, " Date: just now", " 1 file changed, 4 insertions(+), 2 deletions(-)"];
+    },
+    clone: rest => {
+      const [url, dir] = pos(rest);
+      if (!url) return [err("fatal: You must specify a repository to clone."), dim("usage: git clone <repo> [<dir>]")];
+      const name = dir || url.replace(/\/$/, "").split(/[/:]/).pop().replace(/\.git$/, "") || "repo";
+      const here = st.fs[st.cwd] || (st.fs[st.cwd] = []);
+      if (here.includes(name + "/")) return [err(`fatal: destination path '${name}' already exists and is not an empty directory.`)];
+      here.push(name + "/"); here.sort(); st.fs[st.cwd + "/" + name] = ["README.md"];
+      return [`Cloning into '${name}'...`, W(500), "remote: Enumerating objects: 1204, done.", W(400),
+        "Receiving objects: 100% (1204/1204), 2.31 MiB | 9.40 MiB/s, done.", W(300), "Resolving deltas: 100% (812/812), done.", dim(`(cd ${name} to look around)`)];
+    },
+    push: rest => {
+      const b = st.branch, remote = pos(rest)[0] || "origin";
+      if (remote === "upstream") return [`To ${remote}`, err(` ! [rejected]        ${b} -> ${b} (fetch first)`), dim("hint: someone pushed while you weren't looking. try git pull --rebase.")];
+      if (remote !== "origin") return [err(`fatal: '${remote}' does not appear to be a git repository`)];
+      const out = ["To github.com/john-rock/sprig.git"];
+      if (!st.pushed.includes(b)) { st.pushed.push(b); out.push(` * [new branch]      ${b} -> ${b}`); }
+      else if (!st.ahead) return ["Everything up-to-date"];
+      else {
+        const from = (st.commits[st.ahead] || st.commits[st.commits.length - 1])[0], to = st.commits[0][0];
+        out.push(rest.includes("--force-with-lease") ? ` + ${from}...${to} ${b} -> ${b} (forced update)` : `   ${from}..${to}  ${b} -> ${b}`);
+      }
+      st.ahead = 0;
+      if (rest.includes("-u")) out.push(`branch '${b}' set up to track 'origin/${b}'.`);
+      return [W(400), ...out];
+    },
+    pull: rest => [W(400), rest.includes("--rebase") ? `Current branch ${st.branch} is up to date.` : "Already up to date."],
+    rebase: rest => {
+      const b = st.branch;
+      if (rest.includes("--continue") || rest.includes("--abort")) return [err("fatal: No rebase in progress?")];
+      if (rest.includes("-i")) return [dim("hint: Waiting for your editor to close the file..."), W(1100), ok("you got out of vim on the first try. impressive."), `Successfully rebased and updated refs/heads/${b}.`];
+      const x = pos(rest)[0];
+      if (!x || x === b) return [`Current branch ${b} is up to date.`];
+      if (!st.branches.includes(x)) return [err(`fatal: invalid upstream '${x}'`)];
+      return [`Successfully rebased and updated refs/heads/${b}.`];
+    },
+    merge: rest => {
+      const x = pos(rest)[0];
+      if (!x) return [err("fatal: No remote for the current branch.")];
+      if (!st.branches.includes(x)) return [err(`merge: ${x} - not something we can merge`)];
+      if (x === st.branch) return ["Already up to date."];
+      return [`Updating ${st.commits[1][0]}..${st.commits[0][0]}`, "Fast-forward", ` src/engine/rank.ts | 12 ${"+".repeat(7)}${"-".repeat(5)}`, " 1 file changed, 7 insertions(+), 5 deletions(-)"];
+    },
+    stash: rest => dispatch("git", STASH, rest, s => [err(`error: unknown subcommand: ${s}`), dim("usage: git stash list | push | pop | apply | drop")]),
+  };
+  const stashName = s => `WIP on ${s.branch}: ${s.base[0]} ${s.base[1]}`;
+  const STASH = {
+    "": () => STASH.push(),
+    push: () => {
+      const files = [...st.staged, ...st.mod];
+      if (!files.length) return ["No local changes to save"];
+      const s = { files, branch: st.branch, base: st.commits[0], id: hex(7) };
+      st.stash.unshift(s); st.mod = []; st.staged = [];
+      return [`Saved working directory and index state ${stashName(s)}`];
+    },
+    list: () => st.stash.map((s, i) => `stash@{${i}}: ${stashName(s)}`),
+    pop: () => STASH.apply(true),
+    apply: drop => {
+      const s = st.stash[0];
+      if (!s) return [err("error: No stash entries found.")];
+      st.mod = [...new Set([...st.mod, ...s.files])];
+      if (drop === true) st.stash.shift();
+      return [`On branch ${st.branch}`, ...s.files.map(f => err(`        modified:   ${f}`)), ...(drop === true ? [`Dropped refs/stash@{0} (${s.id})`] : [])];
+    },
+    drop: () => {
+      const s = st.stash.shift();
+      return s ? [`Dropped refs/stash@{0} (${s.id})`] : [err("error: No stash entries found.")];
+    },
+  };
+
+  // ----- npm -----
+  const npmScript = s => {
+    if (!hasPkg()) return noPkg();
+    if (!s) return ["Scripts available in sprig@0.1.0 via `npm run-script`:", ...Object.entries(SCRIPTS).map(([k, v]) => `  ${k.padEnd(7)}${v}`)];
+    if (!SCRIPTS[s]) return [err(`npm error Missing script: "${s}"`), ...(closest(s, Object.keys(SCRIPTS)) ? [dim(`did you mean npm run ${closest(s, Object.keys(SCRIPTS))}?`)] : [])];
+    const head = [dim(`> sprig@0.1.0 ${s}`), dim(`> ${SCRIPTS[s]}`)];
+    return {
+      dev: [...head, W(400), "Watching src/ for changes…", W(1200), "src/cli.ts changed, restarting", W(500), dim("^C")],
+      build: [...head, W(700), "dist/sprig-darwin-arm64.tar.gz  dist/sprig-linux-x64.tar.gz"],
+      test: [...head, W(400), dim("test/engine.test.ts"), W(300), dim("test/integration.test.ts"), W(300), ok("✓ 64 pass  0 fail  [412ms]")],
+      lint: [...head, W(600), ok("✓ no type errors")],
+    }[s];
+  };
+  const npm = {
+    "": () => ["npm <command>", "", dim("npm install        install the dependencies"), dim("npm run <script>   run a script from package.json"), dim("npm test           run the tests")],
+    install: rest => {
+      const pkgs = pos(rest);
+      if (pkgs.includes("sprig")) return [dim("sprig isn't on npm. it installs with scripts/install.sh."), ok("(you're already using it, though 🌿)")];
+      if (!pkgs.length && !hasPkg()) return noPkg();
+      const n = pkgs.length ? pkgs.length : 214;
+      return [W(600), `added ${plural(n, "package")}, and audited ${n + 1} packages in ${pkgs.length ? 1 : 3}s`, ok("found 0 vulnerabilities")];
+    },
+    run: rest => npmScript(pos(rest)[0]),
+    test: () => npmScript("test"),
+    init: () => {
+      if (hasPkg()) return [dim("package.json is already here:"), '{ "name": "sprig", "version": "0.1.0", "private": true }'];
+      const here = st.fs[st.cwd] || (st.fs[st.cwd] = []);
+      here.push("package.json"); here.sort();
+      return [`Wrote to ${st.cwd}/package.json:`, `{ "name": "${st.cwd.split("/").pop()}", "version": "1.0.0" }`];
+    },
+    outdated: () => hasPkg() ? [W(500), dim("Package                Current   Wanted   Latest"), err("@withfig/autocomplete  2.692.3   2.692.3  2.701.0"), err("typescript             7.0.2     7.0.2    7.0.4")] : noPkg(),
+    publish: () => hasPkg() ? [W(400), err("npm error code EPRIVATE"), err("npm error This package has been marked as private"), dim("(probably for the best)")] : noPkg(),
+  };
+
+  // ----- docker -----
+  const psRows = all => [
+    ...(st.up ? CONTAINERS.map((c, i) => `${c.padEnd(11)}${["sprig-api", "postgres:16", "sprig-web"][i].padEnd(14)}Up 3 minutes`) : []),
+    ...(all ? [`${"migrate-1".padEnd(11)}${"sprig-api".padEnd(14)}Exited (0) 2 hours ago`] : []),
+  ];
+  const ps = rest => rest.includes("-q")
+    ? (st.up ? ["3f9a2c1e8b07", "b9a6d1f0c4e2", "8c1d04b2a9e3"] : [])
+    : [dim(`${"NAME".padEnd(11)}${"IMAGE".padEnd(14)}STATUS`), ...psRows(rest.includes("-a"))];
+  const LOGS = {
+    "api-1": ["listening on http://0.0.0.0:3000", "GET /health 200 2ms"],
+    "db-1": ["database system is ready to accept connections"],
+    "web-1": ["ready in 412 ms", "GET / 200 8ms"],
+  };
+  function container(rest, what) {
+    const c = pos(rest)[0];
+    if (!c) return [null, [err(`docker: 'docker ${what}' requires at least 1 argument.`)]];
+    if (!CONTAINERS.includes(c)) return [null, [err(`Error response from daemon: No such container: ${c}`)]];
+    return [c];
+  }
+  const COMPOSE = {
+    "": () => ["Usage:  docker compose [OPTIONS] COMMAND", dim("try: docker compose up, down, logs or ps")],
+    up: rest => {
+      const build = rest.includes("--build") ? [dim("[+] Building 3.1s (12/12) FINISHED"), W(400)] : [];
+      if (st.up) return [...build, ...CONTAINERS.map(c => ok(`✔ Container ${c.padEnd(6)} Running`))];
+      st.up = true;
+      return [...build, ...["db-1", "api-1", "web-1"].flatMap(c => [W(350), ok(`✔ Container ${c.padEnd(6)} Started`)]),
+        ...(rest.includes("-d") ? [] : [W(300), dim("api-1  | listening on http://0.0.0.0:3000")])];
+    },
+    down: () => {
+      if (!st.up) return [];
+      st.up = false;
+      return [...["web-1", "api-1", "db-1"].flatMap(c => [W(300), ok(`✔ Container ${c.padEnd(6)} Removed`)]), W(200), ok("✔ Network sprig_default  Removed")];
+    },
+    logs: rest => st.up
+      ? [...CONTAINERS.flatMap(c => LOGS[c].map(l => `${c.padEnd(6)} | ${l}`)), ...(rest.includes("-f") ? [W(900), dim("^C")] : [])]
+      : [dim("(nothing running. try docker compose up)")],
+    ps: () => ps([]),
+  };
+  const docker = {
+    "": () => ["Usage:  docker [OPTIONS] COMMAND", "", dim("A self-sufficient runtime for containers"), dim("try: docker ps, docker compose up, docker run hello-world")],
+    ps,
+    images: () => [dim(`${"REPOSITORY".padEnd(13)}${"TAG".padEnd(8)}${"IMAGE ID".padEnd(14)}SIZE`), ...st.images.map(([r, t, id, s]) => `${r.padEnd(13)}${t.padEnd(8)}${id.padEnd(14)}${s}`)],
+    run: rest => {
+      const img = pos(rest, SPECS.docker.subs.run.opts)[0];
+      if (!img) return [err("docker: 'docker run' requires at least 1 argument."), dim("try: docker run hello-world")];
+      const [name, tag = "latest"] = img.split(":");
+      if (name === "hello-world") return [dim("Unable to find image 'hello-world:latest' locally"), W(500), dim("latest: Pulling from library/hello-world"), W(700),
+        "", ok("Hello from Docker!"), "This message shows that your installation appears to be working correctly."];
+      if (name === "sprig") return [W(300), ok("🌿 sprig, now in a container."), dim("it still only completes zsh, though.")];
+      const out = [];
+      if (!st.images.some(([r, t]) => r === name && t === tag)) {
+        st.images.unshift([name, tag, hex(12), "77MB"]);
+        out.push(dim(`Unable to find image '${name}:${tag}' locally`), W(500), dim(`${tag}: Pulling from library/${name}`), W(700), dim(`Status: Downloaded newer image for ${name}:${tag}`));
+      }
+      if (rest.includes("-it")) out.push(W(300), `root@${hex(12)}:/# exit`);
+      else out.push(W(300), dim(`(${name} ran, did its thing and exited 0)`));
+      return out;
+    },
+    build: rest => {
+      const tag = optVal(rest, "-t") || "sprig";
+      const [r, t = "latest"] = tag.split(":");
+      st.images = st.images.filter(i => !(i[0] === r && i[1] === t));
+      st.images.unshift([r, t, hex(12), "184MB"]);
+      return [dim(" => [1/4] FROM docker.io/oven/bun:1"), W(300), dim(" => [2/4] COPY package.json bun.lock ./"), W(300),
+        dim(" => [3/4] RUN bun install --frozen-lockfile"), W(600), dim(" => [4/4] COPY . ."), W(300),
+        ok("[+] Building 4.2s (9/9) FINISHED"), ` => naming to docker.io/library/${r}:${t}`];
+    },
+    exec: rest => {
+      const [c, e] = container(rest, "exec");
+      if (e) return e;
+      if (!st.up) return [err(`Error response from daemon: container ${c} is not running`)];
+      return {
+        "api-1": ["root@api-1:/app# ls", "node_modules  package.json  src", "root@api-1:/app# exit"],
+        "db-1": ["psql (16.4)", "postgres=# select 'hi' as hello;", " hello ", "-------", " hi", "postgres=# \\q"],
+        "web-1": ["/usr/share/nginx/html # ls", "index.html  assets", "/usr/share/nginx/html # exit"],
+      }[c];
+    },
+    logs: rest => {
+      const [c, e] = container(rest, "logs");
+      if (e) return e;
+      return [...LOGS[c], ...(rest.includes("-f") ? [W(900), dim("^C")] : [])];
+    },
+    compose: rest => dispatch("docker", COMPOSE, rest, s => [err(`unknown docker command: "compose ${s}"`)]),
+  };
+
+  // ----- brew -----
+  const FORMULAE = ["bat", "bun", "eza", "fd", "fzf", "gh", "git", "jq", "neovim", "node", "postgresql@16", "python@3.13", "redis", "ripgrep", "starship", "tmux", "zsh", "zsh-autosuggestions", "zsh-syntax-highlighting"];
+  const SERVICES = {
+    "": () => SERVICES.list(),
+    list: () => [dim(`${"Name".padEnd(15)}${"Status".padEnd(9)}User`), ...Object.entries(st.svc).map(([n, s]) => `${n.padEnd(15)}${s.padEnd(9)}${s === "started" ? "you" : ""}`)],
+    start: rest => svc(rest, true),
+    stop: rest => svc(rest, false),
+  };
+  function svc(rest, start) {
+    const x = pos(rest)[0];
+    if (!x) return [err("Error: Formula(e) missing, please provide a formula name or use --all.")];
+    if (!(x in st.svc)) return [err(`Error: No available formula with the name "${x}".`)];
+    const label = `(label: homebrew.mxcl.${x})`;
+    if (start) {
+      if (st.svc[x] === "started") return [`Service \`${x}\` already started, use \`brew services restart ${x}\` to restart.`];
+      st.svc[x] = "started";
+      return [W(500), ok(`==> Successfully started \`${x}\` ${label}`)];
+    }
+    if (st.svc[x] !== "started") return [`Service \`${x}\` is not started.`];
+    st.svc[x] = "none";
+    return [`Stopping \`${x}\`... (might take a while)`, W(600), ok(`==> Successfully stopped \`${x}\` ${label}`)];
+  }
+  const brew = {
+    "": () => ["Example usage:", "  brew search TEXT|/REGEX/", "  brew install FORMULA|CASK...", "  brew list", dim("…and brew doctor, which is very reassuring.")],
+    install: rest => {
+      const names = pos(rest);
+      if (!names.length) return [err("Error: Invalid usage: This command requires at least 1 formula or cask argument.")];
+      return names.flatMap(f => {
+        if (f === "sprig" || f.endsWith("/sprig")) return [err(`Error: No available formula with the name "${f}".`), dim("the tap is coming soon. scripts/install.sh works today 🌿")];
+        if (st.formulae.includes(f)) return [dim(`Warning: ${f} is already installed and up-to-date.`)];
+        if (!FORMULAE.includes(f)) { const m = closest(f, FORMULAE); return [err(`Error: No available formula with the name "${f}".${m ? ` Did you mean ${m}?` : ""}`)]; }
+        st.formulae.push(f); st.formulae.sort();
+        return [arrow(`Downloading https://ghcr.io/v2/homebrew/core/${f}/manifests/latest`), W(600), arrow(`Pouring ${f}--1.0.0.arm64_sequoia.bottle.tar.gz`), W(500), `🍺  /opt/homebrew/Cellar/${f}/1.0.0: 42 files, 3.1MB`];
+      });
+    },
+    upgrade: () => {
+      if (st.upgraded) return [];
+      st.upgraded = true;
+      return [arrow("Upgrading 2 outdated packages:"), "bun 1.1.38 -> 1.1.42", "git 2.47.0 -> 2.47.1", W(900), "🍺  all fresh"];
+    },
+    list: () => [arrow("Formulae"), st.formulae.join("  ")],
+    search: rest => {
+      const q = pos(rest)[0];
+      if (!q) return [err("Error: This command requires at least 1 text or regex argument.")];
+      const hits = FORMULAE.filter(f => f.includes(q));
+      return hits.length ? [arrow("Formulae"), hits.join("  ")] : [err(`Error: No formulae or casks found for "${q}".`)];
+    },
+    doctor: () => [W(700), ok("Your system is ready to brew.")],
+    services: rest => dispatch("brew", SERVICES, rest, s => [err(`Error: Unknown subcommand: ${s}`)]),
+  };
+
+  // ----- sprig -----
+  const sprig = {
+    "": () => ["usage: sprig <command>", "", dim("  doctor      check the setup"), dim("  install     add sprig to ~/.zshrc"), dim("  uninstall   remove it and stop the daemon"), dim('  complete    print completions, e.g. sprig complete "git ch"')],
+    doctor: () => st.off
+      ? [err("✗ sprig block not found in ~/.zshrc"), err("✗ daemon not running"), dim("run sprig install to fix both")]
+      : [ok("✓ zsh 5.9  ✓ daemon running (pid 4821)"), ok("✓ 712 specs loaded  ✓ cursor column (DSR) supported")],
+    install: () => {
+      if (!st.off) return ["sprig is already in ~/.zshrc. nothing to do."];
+      st.off = false;
+      return [ok("✓ backed up ~/.zshrc to ~/.zshrc.sprig-backup"), W(300), ok("✓ added the sprig block to ~/.zshrc"), W(300), ok("✓ daemon started"), dim("🌿 the dropdown is back. start typing.")];
+    },
+    uninstall: () => {
+      if (st.off) return ["sprig isn't in ~/.zshrc. nothing to do."];
+      st.off = true;
+      return [ok("✓ removed the sprig block from ~/.zshrc"), ok("✓ stopped the daemon"), dim("the dropdown is gone. type sprig install to bring it back."), dim("(no autocomplete to help you spell it, though)")];
+    },
+    complete: rest => {
+      const q = unq(rest.join(" "));
+      if (!rest.length) return [err('usage: sprig complete "<line>"'), dim('try: sprig complete "git ch"')];
+      const items = suggest(q).items.slice(0, 5);
+      return items.length ? items.map(it => `${it.name.padEnd(14)}${it.desc}`) : [dim("(no completions)")];
+    },
+  };
+
+  // ----- shell -----
+  function cd(toks) {
+    const to = unq(toks[0] || "~").replace(/(.)\/$/, "$1");
+    const dir = resolve(to);
+    if (dir && st.fs[dir]) { st.cwd = dir; return []; }
+    const parent = dir && st.fs[dir.slice(0, dir.lastIndexOf("/"))];
+    if (parent && parent.includes(dir.split("/").pop())) return [err(`cd: not a directory: ${to}`)];
+    return [err(`cd: no such file or directory: ${to}`)];
+  }
+  function ls(toks) {
+    const flags = toks.filter(x => x.startsWith("-")).join("");
+    const target = pos(toks)[0];
+    const dir = target ? resolve(target.replace(/(.)\/$/, "$1")) : st.cwd;
+    let names = dir && st.fs[dir];
+    if (!names) {
+      const parent = dir && st.fs[dir.slice(0, dir.lastIndexOf("/"))];
+      if (parent && parent.includes(dir.split("/").pop())) names = [target];
+      else return [err(`ls: ${target}: No such file or directory`)];
+    }
+    names = names.filter(n => flags.includes("a") || n[0] !== ".");
+    const show = n => n.endsWith("/") ? `<span class="p-dir">${esc(n)}</span>` : esc(n);
+    if (!flags.includes("l")) return names.length ? [{ h: names.map(show).join("  ") }] : [];
+    const size = n => n.endsWith("/") ? 160 : (n.length * 397) % 9000 + 300;
+    const fmt = n => flags.includes("h") ? (size(n) >= 1024 ? (size(n) / 1024).toFixed(1) + "K" : size(n) + "B") : String(size(n));
+    return [`total ${names.length * 8}`, ...names.map(n => ({ h: `${n.endsWith("/") ? "drwxr-xr-x" : "-rw-r--r--"}  you  staff  ${fmt(n).padStart(5)}  Nov  2 09:41  ${show(n)}` }))];
+  }
+  // not in the dropdown on purpose
+  const EXTRAS = {
+    help: () => ["commands in this demo:", "  git  npm  docker  brew  cd  ls  sprig  clear", dim("every one of them (and their subcommands) does something. a few others are hiding.")],
+    echo: toks => [toks.map(unq).join(" ")],
+    pwd: () => [st.cwd.replace(/^~/, "/Users/you")],
+    whoami: () => ["you"],
+    exit: () => [dim("there's no leaving. it's a web page. try clear.")],
+    sudo: () => [err("you're not in the sudoers file. this incident will be reported."), dim("(to nobody. it's a web page.)")],
+    vim: () => [dim("vim would open here, but then you'd have to figure out how to quit it.")],
+    fig: () => ["fig shut down in 2024.", ok("🌿 sprig picks up where its dropdown left off.")],
+    history: () => st.hist.slice(-5).map((h, i, a) => `${String(st.hist.length - a.length + i + 1).padStart(4)}  ${h}`),
+  };
+  EXTRAS.nano = EXTRAS.emacs = EXTRAS.vi = EXTRAS.vim;
+
   function simulate(line) {
-    const t = line.match(/"[^"]*"|\S+/g) || [];
-    const [cmd, sub] = t;
-    const args = t.slice(2).filter(a => !a.startsWith("-"));
-    const demo = { t: "(demo: nothing ran)", c: "dim" };
+    const [cmd, ...toks] = line.match(/"[^"]*"|'[^']*'|\S+/g) || [];
     if (!cmd) return [];
     if (cmd === "clear") return "clear";
-    if (cmd === "git") {
-      if (sub === "checkout" || sub === "switch") {
-        const create = t.includes("-b") || t.includes("-c");
-        const target = args[args.length - 1];
-        if (!target) return [{ t: "fatal: you must specify a branch", c: "err" }];
-        if (create) { BRANCHES.push(target); st.branch = target; return [`Switched to a new branch '${target}'`]; }
-        if (BRANCHES.includes(target)) { const same = target === st.branch; st.branch = target; return [same ? `Already on '${target}'` : `Switched to branch '${target}'`]; }
-        return [{ t: `error: pathspec '${target}' did not match any file(s) known to git`, c: "err" }];
-      }
-      if (sub === "status") return [`On branch ${st.branch}`, "nothing to commit, working tree clean"];
-      if (sub === "commit") {
-        const m = line.match(/-m\s+"([^"]*)"|-m\s+(\S+)/);
-        if (!m) return [{ t: "Aborting commit due to empty commit message.", c: "err" }];
-        return [`[${st.branch} 7d1e3f0] ${m[1] ?? m[2]}`, " 2 files changed, 18 insertions(+), 3 deletions(-)"];
-      }
-      if (sub === "branch") return BRANCHES.map(b => (b === st.branch ? "* " : "  ") + b);
-      if (sub === "log") return COMMITS.map(([h, m]) => `${h} ${m}`);
-      if (sub === "push") return ["Everything up-to-date"];
-      if (sub === "pull") return ["Already up to date."];
-      return [demo];
-    }
-    if (cmd === "npm" && sub === "run") {
-      const s = args[0];
-      if (!SCRIPTS[s]) return [{ t: `npm error Missing script: "${s ?? ""}"`, c: "err" }];
-      const tail = { dev: "Watching src/ for changes…", build: "dist/sprig-darwin-arm64.tar.gz  dist/sprig-linux-x64.tar.gz", test: "✓ 64 pass  0 fail  [412ms]", lint: "✓ no type errors" }[s];
-      return [{ t: `> sprig@0.1.0 ${s}`, c: "dim" }, { t: `> ${SCRIPTS[s]}`, c: "dim" }, { t: tail, c: s === "test" || s === "lint" ? "ok" : "" }];
-    }
-    if (cmd === "docker" && (sub === "ps" || (sub === "compose" && t[2] === "ps")))
-      return [{ t: "NAME    IMAGE           STATUS", c: "dim" }, "api-1   sprig-api       Up 3 minutes", "db-1    postgres:16     Up 3 minutes", "web-1   sprig-web       Up 3 minutes"];
-    if (cmd === "docker" && sub === "compose" && t[2] === "up") return ["✔ Container db-1   Started", "✔ Container api-1  Started", "✔ Container web-1  Started"];
-    if (cmd === "cd") {
-      const to = (sub || "~").replace(/\/$/, "");
-      if (to === "~") st.cwd = "~";
-      else if (to === "..") st.cwd = st.cwd.includes("/") ? st.cwd.slice(0, st.cwd.lastIndexOf("/")) || "~" : "~";
-      else st.cwd = to.startsWith("~") ? to : `${st.cwd}/${to}`;
-      return [];
-    }
-    if (cmd === "ls") return ["README.md  package.json  scripts/  shell/  src/  test/"];
-    if (cmd === "sprig" && sub === "doctor") return [{ t: "✓ zsh 5.9  ✓ daemon running (pid 4821)", c: "ok" }, { t: "✓ 712 specs loaded  ✓ cursor column (DSR) supported", c: "ok" }];
-    if (SPECS[cmd]) return [demo];
-    return [{ t: `zsh: command not found: ${cmd}`, c: "err" }];
+    if (cmd === "cd") return cd(toks);
+    if (cmd === "ls") return ls(toks);
+    if (cmd === "git" && !["clone", "--version", "-v", "-h", "--help", undefined].includes(toks[0]) && !inRepo()) return notRepo();
+    const tables = { git, npm, docker, brew, sprig };
+    if (tables[cmd]) return dispatch(cmd, tables[cmd], toks);
+    if (EXTRAS[cmd]) return EXTRAS[cmd](toks);
+    return [err(`zsh: command not found: ${cmd}`), dim("type help to see what's here")];
   }
 
   const KEYLABEL = { ArrowUp: "↑", ArrowDown: "↓", Tab: "Tab", ShiftTab: "Shift-Tab", Enter: "Enter", Escape: "Esc" };
@@ -674,7 +1189,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
         if (op === "w") await sleep(v);
         else if (op === "k") key(v);
         else if (op === "t") await typeText(v);
-        else if (op === "reset") { st.out = []; print([]); st.branch = "main"; st.line = ""; update(true); await sleep(500); }
+        else if (op === "reset") { job = null; st.out = []; print([]); Object.assign(st, fresh()); st.line = ""; update(true); await sleep(500); }
       }
     }
   }
@@ -690,7 +1205,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
     const text = b.dataset.copy, label = b.dataset.label ||= b.textContent;
     const done = () => { b.textContent = "copied"; setTimeout(() => (b.textContent = label), 1400); };
-    const fallback = () => { const r = document.createRange(); r.selectNodeContents(b.nextElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "selected"; setTimeout(() => (b.textContent = label), 1400); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(b.parentElement.querySelector("pre")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "selected"; setTimeout(() => (b.textContent = label), 1400); };
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch { fallback(); }
   }));
 })();
