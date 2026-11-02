@@ -75,7 +75,14 @@ code, kbd, pre { font-family: var(--f-mono); }
 
 /* ---------- hero ---------- */
 .hero { display: grid; gap: 28px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 12px; }
+.nav { display: flex; gap: 8px; }
+.nav a { font: 500 .88rem/1 var(--f-mono); color: var(--ink); background: var(--paper-2); text-decoration: none; border: 1px solid var(--rule); border-radius: 8px; padding: 9px 11px; }
+.nav a:hover, .nav a:focus-visible { border-color: var(--leaf); }
+.nav a:active { transform: translateY(1px); }
+#install { scroll-margin-top: 32px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 .mark { font: 400 clamp(2.8rem, 9vw, 5rem)/1 "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; display: inline-block; }
 h1 {
   font: 800 clamp(3.4rem, 11vw, 6.2rem)/.85 var(--f-display);
@@ -239,9 +246,14 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="brand">
-      <span class="mark" aria-hidden="true">🌿</span>
-      <h1>sprig</h1>
+    <div class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">🌿</span>
+        <h1>sprig</h1>
+      </div>
+      <nav class="nav" aria-label="Main">
+        <a href="#install">install</a>
+      </nav>
     </div>
     <div class="lede">
       <p class="big">autocomplete for zsh, like fig used to be.</p>
@@ -284,7 +296,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     </div>
   </header>
 
-  <section>
+  <section id="install">
     <h2>install it</h2>
     <div class="install">
       <div class="step">
