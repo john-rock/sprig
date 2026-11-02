@@ -68,7 +68,7 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-.wrap { max-width: 920px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 72px; }
+.wrap { --sec-gap: 200px; max-width: 920px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: var(--sec-gap); }
 a { color: var(--leaf); text-underline-offset: 3px; }
 code, kbd, pre { font-family: var(--f-mono); }
 :focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
@@ -165,25 +165,24 @@ h1 {
 
 /* ---------- sections ---------- */
 section { display: grid; gap: 22px; }
+
+/* sprig ornament centered in the gap above each section */
+section { position: relative; }
+section::before { content: ""; position: absolute; left: 50%; pointer-events: none; background: var(--leaf); mask: var(--m) center / contain no-repeat; -webkit-mask: var(--m) center / contain no-repeat; }
+section::before { --m: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 72 28'><path d='M4 17C22 15 44 17 68 11' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'/><path d='M22 16C19 10 22 5 28 3C29 9 27 13 22 16Z'/><path d='M36 16.5C41 19 43 24 41 27C36 26 34 21 36 16.5Z'/><path d='M52 14C51 8 55 4 61 3C61 9 58 12 52 14Z'/></svg>"); width: 72px; height: 28px; top: calc(var(--sec-gap) / -2 - 14px); margin-left: -36px; opacity: .75; }
 h2 { font: 800 clamp(1.7rem, 4.5vw, 2.3rem)/1.05 var(--f-display); letter-spacing: -.03em; margin: 0; text-wrap: balance; }
 h3 { font: 600 1.05rem/1.3 var(--f-body); margin: 0; }
 .sub { color: var(--muted); margin: 0; max-width: 62ch; }
 
-.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-.key { display: grid; gap: 8px; padding: 16px; border-top: 2px solid var(--ink); }
-.key .caps { display: flex; gap: 6px; flex-wrap: wrap; }
-kbd {
-  font: 700 .82rem/1 var(--f-mono); padding: 6px 8px; border-radius: 6px;
-  background: var(--paper-2); border: 1px solid var(--rule); box-shadow: 0 2px 0 var(--rule);
-}
-.key p { margin: 0; color: var(--muted); font-size: .95rem; }
-
-.install { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.install { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 36px 28px; }
 .step { display: grid; gap: 10px; align-content: start; min-width: 0; }
 .step p { margin: 0; color: var(--muted); font-size: .95rem; }
+.soon { display: inline-block; vertical-align: 2px; margin-left: 6px; padding: 3px 8px; border-radius: 999px; font: 700 .7rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); background: var(--paper-2); border: 1px solid var(--rule); }
 .code { position: relative; background: var(--term-bg); color: var(--term-fg); border-radius: 10px; min-width: 0; }
 .code pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-size: .85rem; line-height: 1.7; }
 .code .c { color: var(--term-dim); }
+.step.agent { grid-column: 1 / -1; }
+.code pre.prompt { white-space: pre-wrap; padding-right: 110px; }
 .code .d { color: var(--prompt-arrow); user-select: none; }
 .copy {
   position: absolute; top: 8px; right: 8px; font: 600 .75rem/1 var(--f-body);
@@ -198,10 +197,7 @@ kbd {
 .wire { display: grid; justify-items: center; gap: 4px; font: 400 .78rem/1.2 var(--f-mono); color: var(--muted); text-align: center; }
 .wire .line { width: 90px; height: 2px; background: repeating-linear-gradient(90deg, var(--leaf) 0 8px, transparent 8px 13px); background-size: 26px 2px; animation: flow 1s linear infinite; }
 @keyframes flow { to { background-position: 26px 0; } }
-.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px 28px; }
-.fact { display: grid; gap: 6px; }
-.fact p { margin: 0; color: var(--muted); font-size: .95rem; }
-.fact code, .sub code, td code, .step code { font-size: .86em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+.sub code, td code, .step code { font-size: .86em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
 
 .tbl { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: .95rem; }
@@ -212,7 +208,7 @@ td:last-child { color: var(--muted); }
 footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rule); padding-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
 
 @media (max-width: 640px) {
-  .wrap { padding-block: 24px 48px; gap: 56px; }
+  .wrap { padding-block: 24px 48px; --sec-gap: 140px; }
   .term { font-size: 12.5px; }
   .term-body { height: 360px; padding: 12px; }
   .flow { grid-template-columns: 1fr; }
@@ -272,17 +268,6 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   </header>
 
   <section>
-    <h2>six keys, only while it's open</h2>
-    <p class="sub">the dropdown only grabs these keys while it's showing. close it and everything works like normal. if a command doesn't have a spec, tab just falls back to regular zsh completion.</p>
-    <div class="keys">
-      <div class="key"><div class="caps"><kbd>↑</kbd><kbd>↓</kbd><kbd>Ctrl-P</kbd><kbd>Ctrl-N</kbd></div><p>move the selection.</p></div>
-      <div class="key"><div class="caps"><kbd>Tab</kbd></div><p>insert the selected item. <kbd>Shift-Tab</kbd> goes up.</p></div>
-      <div class="key"><div class="caps"><kbd>Enter</kbd></div><p>insert the selected item and run the line. want to run exactly what you typed? hit esc first.</p></div>
-      <div class="key"><div class="caps"><kbd>Esc</kbd></div><p>close the dropdown until you start the next word.</p></div>
-    </div>
-  </section>
-
-  <section>
     <h2>install it</h2>
     <div class="install">
       <div class="step">
@@ -292,13 +277,24 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
 <span class="d">$ </span>exec zsh   <span class="c"># or open a new tab</span></pre></div>
       </div>
       <div class="step">
-        <h3>with homebrew</h3>
+        <h3>with homebrew <span class="soon">coming soon</span></h3>
         <p>once the tap is published. <code>sprig uninstall</code> pulls the zshrc block back out and stops the daemon.</p>
         <div class="code"><button class="copy" data-copy="brew install john-rock/sprig/sprig && sprig install">copy</button><pre><span class="d">$ </span>brew install john-rock/sprig/sprig
 <span class="d">$ </span>sprig install</pre></div>
       </div>
+      <div class="step agent">
+        <h3>have your agent install it</h3>
+        <p>using claude code, codex, cursor or another coding agent? copy this prompt and paste it in. it clones the repo, runs the installer and checks the setup with <code>sprig doctor</code>.</p>
+        <div class="code"><button class="copy" data-copy="Install sprig (https://github.com/john-rock/sprig), an IDE-style autocomplete dropdown for zsh, on this machine.&#10;&#10;1. Check that zsh, git and Bun (https://bun.sh) are installed. If Bun is missing, ask me before installing it.&#10;2. Clone the repo somewhere sensible, like ~/src/sprig, and run scripts/install.sh from inside the checkout.&#10;3. If the script says ~/.local/bin is not on my PATH, add it in ~/.zshrc.&#10;4. Run `sprig doctor` and fix anything it reports.&#10;5. Don&#x27;t change ~/.zshrc beyond that. When you&#x27;re done, tell me to open a new terminal tab (or run `exec zsh`) to start using it.">copy prompt</button><pre class="prompt">Install sprig (https://github.com/john-rock/sprig), an IDE-style autocomplete dropdown for zsh, on this machine.
+
+1. Check that zsh, git and Bun (https://bun.sh) are installed. If Bun is missing, ask me before installing it.
+2. Clone the repo somewhere sensible, like ~/src/sprig, and run scripts/install.sh from inside the checkout.
+3. If the script says ~/.local/bin is not on my PATH, add it in ~/.zshrc.
+4. Run `sprig doctor` and fix anything it reports.
+5. Don't change ~/.zshrc beyond that. When you're done, tell me to open a new terminal tab (or run `exec zsh`) to start using it.</pre></div>
+      </div>
     </div>
-    <p class="sub">something acting weird? run <code>sprig doctor</code>. daemon logs live in <code>~/.local/state/sprig/daemon.log</code>.</p>
+    <p class="sub">something acting weird? run <code>sprig doctor</code>. daemon logs live in <code>~/.local/state/sprig/daemon.log</code>. still stuck? <a href="https://github.com/john-rock/sprig/issues" target="_blank" rel="noopener">open an issue on github</a>.</p>
   </section>
 
   <section>
@@ -313,12 +309,6 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
         <span class="t">sprig daemon</span>
         <p>breaks up the line, walks the fig spec, runs stuff like <code>git branch</code>, and ranks what comes back.</p>
       </div>
-    </div>
-    <div class="facts">
-      <div class="fact"><h3>no terminal wrapper</h3><p>fig, amazon q and inshellisense run your shell inside a fake terminal. sprig doesn't, so scrollback, resizing, tmux and ssh all just work.</p></div>
-      <div class="fact"><h3>never slows you down</h3><p>the daemon starts with your first shell and quits after an hour idle. if it's not up yet, you just don't get a dropdown for that keystroke.</p></div>
-      <div class="fact"><h3>learns your picks</h3><p>stuff you pick ranks higher next time. pick something twice in the demo up top and watch it move up.</p></div>
-      <div class="fact"><h3>700+ specs, plus yours</h3><p>uses fig's open source <a href="https://github.com/withfig/autocomplete" target="_blank" rel="noopener">completion specs</a>. drop your own compiled specs in <code>~/.config/sprig/specs/</code> and they win.</p></div>
     </div>
   </section>
 
@@ -698,9 +688,9 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
 
   // ---------- copy buttons ----------
   document.querySelectorAll(".copy").forEach(b => b.addEventListener("click", () => {
-    const text = b.dataset.copy;
-    const done = () => { b.textContent = "copied"; setTimeout(() => (b.textContent = "copy"), 1400); };
-    const fallback = () => { const r = document.createRange(); r.selectNodeContents(b.nextElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "selected"; setTimeout(() => (b.textContent = "copy"), 1400); };
+    const text = b.dataset.copy, label = b.dataset.label ||= b.textContent;
+    const done = () => { b.textContent = "copied"; setTimeout(() => (b.textContent = label), 1400); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents(b.nextElementSibling); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "selected"; setTimeout(() => (b.textContent = label), 1400); };
     try { navigator.clipboard.writeText(text).then(done, fallback); } catch { fallback(); }
   }));
 })();
