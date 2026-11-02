@@ -289,15 +289,13 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     <div class="install">
       <div class="step">
         <h3>from this checkout</h3>
-        <p>you'll need <a href="https://bun.sh" target="_blank" rel="noopener">bun</a> to build it. it installs to <code>~/.local/share/sprig</code> and adds one line to your <code>~/.zshrc</code>.</p>
+        <p>you'll need <a href="https://bun.sh" target="_blank" rel="noopener">bun</a> to build it. it installs to <code>~/.local/share/sprig</code> and adds one line to your <code>~/.zshrc</code>. <code>sprig uninstall</code> takes it back out.</p>
         <div class="code"><button class="copy" data-copy="scripts/install.sh&#10;exec zsh">copy</button><pre><span class="d">$ </span>scripts/install.sh
 <span class="d">$ </span>exec zsh   <span class="c"># or open a new tab</span></pre></div>
       </div>
       <div class="step">
         <h3>with homebrew <span class="soon">coming soon</span></h3>
-        <p>once the tap is published. <code>sprig uninstall</code> pulls the zshrc block back out and stops the daemon.</p>
-        <div class="code"><button class="copy" data-copy="brew install john-rock/sprig/sprig && sprig install">copy</button><pre><span class="d">$ </span>brew install john-rock/sprig/sprig
-<span class="d">$ </span>sprig install</pre></div>
+        <p>we're working on it. until then, use the install script or have your agent do it.</p>
       </div>
       <div class="step agent">
         <h3>have your agent install it</h3>
