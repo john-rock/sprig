@@ -6,7 +6,7 @@
 class Sprig < Formula
   desc "Fig-style IDE autocomplete for zsh, powered by Fig's completion specs"
   homepage "https://github.com/john-rock/sprig"
-  version "0.1.0"
+  version "0.1.1"
   license "MIT"
 
   on_macos do

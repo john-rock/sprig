@@ -3,6 +3,7 @@ import { complete } from "./engine/complete.ts";
 import { runDaemon } from "./daemon/server.ts";
 import { selfCommand, socketPath, VERSION } from "./paths.ts";
 import { doctor, install, uninstall } from "./setup.ts";
+import { update } from "./update.ts";
 import zshScript from "../shell/sprig.zsh" with { type: "text" };
 
 const [cmd, ...rest] = process.argv.slice(2);
@@ -42,6 +43,8 @@ switch (cmd) {
     process.exit(await install());
   case "uninstall":
     process.exit(await uninstall());
+  case "update":
+    process.exit(await update());
   case "doctor":
     process.exit(await doctor());
   case "--version":
@@ -53,6 +56,7 @@ switch (cmd) {
 
 usage:
   sprig install                      add sprig to ~/.zshrc (open a new tab afterwards)
+  sprig update                       update to the latest release
   sprig uninstall                    remove sprig from ~/.zshrc and stop the daemon
   sprig doctor                       check that everything is wired up
   sprig complete "<line>" [--json]   show completions for a command line

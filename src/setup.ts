@@ -61,7 +61,7 @@ export async function uninstall(): Promise<number> {
 }
 
 /** Send one message to the daemon; resolves to its reply line (or "" for none), undefined if unreachable. */
-function request(msg: string, wantReply = false): Promise<string | undefined> {
+export function request(msg: string, wantReply = false): Promise<string | undefined> {
   return new Promise((done) => {
     const timer = setTimeout(() => done(undefined), 1500);
     let buf = "";

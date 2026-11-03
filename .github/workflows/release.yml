@@ -1,0 +1,56 @@
+# Push a tag like v0.1.1 to build the tarballs and publish a GitHub release.
+# The tag must match VERSION in src/paths.ts; the notes come from that
+# version's section in CHANGELOG.md.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Bun cross-compiles every target from here; the darwin builds are native.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Check the tag matches VERSION
+        run: |
+          version=$(bun -e 'console.log((await import("./src/paths.ts")).VERSION)')
+          if [[ "v$version" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::tag $GITHUB_REF_NAME doesn't match VERSION $version in src/paths.ts"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Extract release notes
+        run: |
+          awk -v v="$VERSION" '
+            $0 ~ "^## " { if (found) exit; if ($2 == v) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          if [[ ! -s notes.md ]]; then
+            echo "::error::CHANGELOG.md has no '## $VERSION' section"
+            exit 1
+          fi
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun test
+
+      - name: Build tarballs
+        run: scripts/build.sh
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/SHA256SUMS \
+            --title "sprig $VERSION" --notes-file notes.md

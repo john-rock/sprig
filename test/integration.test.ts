@@ -71,6 +71,17 @@ describe.skipIf(!python)("zsh integration", () => {
     expect(s["ctrl-c"]).not.toContain("status ");
   }, 60_000);
 
+  // grep's ~9KB option list is bigger than the unix socket buffer; a reply cut
+  // short used to leave zsh blocked in `read` and freeze the line editor.
+  test("large reply doesn't freeze the shell", () => {
+    const s = run([
+      ["keys", "grep -"], ["wait", 1], ["snap", "options"],
+      ["keys", "\x7fx"], ["wait", 0.8], ["snap", "after"],
+    ]);
+    expect(s.options).toContain("--ignore-case");
+    expect(s.after).toContain("grep x█");
+  }, 60_000);
+
   test("prompt at the bottom of the screen scrolls to fit", () => {
     const s = run([
       ["keys", "for i in {1..40}; do echo line $i; done\r"], ["wait", 0.5],

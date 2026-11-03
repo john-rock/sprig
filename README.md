@@ -25,6 +25,14 @@ brew install john-rock/sprig/sprig && sprig install
 
 `sprig install` backs up `~/.zshrc` and appends a marked block at the end. `sprig uninstall` removes it and stops the daemon.
 
+## Update
+
+```sh
+sprig update            # installs the latest release, then open a new tab
+```
+
+`sprig update` checks the download against the release's `SHA256SUMS`, switches to the new version, and stops the old daemon. Homebrew installs update with `brew upgrade sprig`; source checkouts with `git pull && scripts/install.sh`.
+
 ## Keys
 
 The dropdown only takes over these keys while it's open:
@@ -74,5 +82,13 @@ bun test                                     # engine tests
 SPRIG_PYTHON=/path/to/python-with-pyte bun test   # + real zsh in a headless terminal
 scripts/build.sh                             # release tarballs in dist/
 ```
+
+### Releasing
+
+1. Bump `VERSION` in `src/paths.ts` (and `package.json`, `Formula/sprig.rb`), and add a `## <version>` section to `CHANGELOG.md`.
+2. Merge to `main`, then tag it: `git tag v<version> && git push origin v<version>`.
+3. The `Release` workflow checks that the tag matches `VERSION`, runs the tests, builds the tarballs and publishes a GitHub release with that changelog section as its notes. `sprig update` picks it up from there.
+
+Bump the version for every release: each version gets its own daemon socket, which is what moves running shells off the old daemon.
 
 The parser's behavior follows Fig's and Microsoft's [inshellisense](https://github.com/microsoft/inshellisense) (MIT). Completion specs © Fig/Hercules Labs and contributors, MIT.
