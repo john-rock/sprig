@@ -219,6 +219,7 @@ th { font: 600 .75rem/1 var(--f-body); letter-spacing: .08em; text-transform: up
 td:last-child { color: var(--muted); }
 
 .release { display: grid; grid-template-columns: 150px 1fr; gap: 10px 28px; }
+.release + .release { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--rule); }
 .rel-head { display: grid; gap: 8px; align-content: start; justify-items: start; }
 .rel-head .ver { font: 800 1.5rem/1 var(--f-display); letter-spacing: -.02em; }
 .rel-head .date { font: 400 .8rem/1 var(--f-mono); color: var(--muted); }
@@ -328,9 +329,20 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     <h2>release notes</h2>
     <article class="release">
       <div class="rel-head">
+        <span class="ver">0.1.1</span>
+        <span class="date">nov 3, 2026</span>
+        <span class="soon">latest</span>
+      </div>
+      <ul>
+        <li>fixed: the shell no longer freezes on commands with long option lists, like <code>grep -</code>.</li>
+        <li>new: <code>sprig update</code> installs the latest release, checks it against the published checksums and restarts the daemon.</li>
+        <li>coming from 0.1.0? reinstall once with <code>scripts/install.sh</code>; after that, <code>sprig update</code> handles it.</li>
+      </ul>
+    </article>
+    <article class="release">
+      <div class="rel-head">
         <span class="ver">0.1.0</span>
         <span class="date">nov 2, 2026</span>
-        <span class="soon">latest</span>
       </div>
       <ul>
         <li>first release. a dropdown under your cursor with subcommands, options, branches, files and descriptions for 700+ clis, built on fig's open-source specs.</li>
@@ -374,7 +386,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   </section>
 
   <footer>
-    <span>sprig 0.1.0 · mit license · <a href="https://github.com/john-rock/sprig" target="_blank" rel="noopener">github</a></span>
+    <span>sprig 0.1.1 · mit license · <a href="https://github.com/john-rock/sprig" target="_blank" rel="noopener">github</a></span>
     <span>completion specs © fig/hercules labs and contributors (mit). parser behavior follows <a href="https://github.com/microsoft/inshellisense" target="_blank" rel="noopener">inshellisense</a>.</span>
   </footer>
 </div>
@@ -669,7 +681,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
   const noPkg = () => [err("npm error code ENOENT"), err(`npm error enoent Could not read package.json in ${st.cwd}`), dim("(try cd ~/dev/sprig first)")];
   const notRepo = () => [err("fatal: not a git repository (or any of the parent directories): .git")];
 
-  const VERSIONS = { git: "git version 2.47.1", npm: "10.9.2", docker: "Docker version 27.3.1, build ce12230", brew: "Homebrew 4.4.2", sprig: "sprig 0.1.0" };
+  const VERSIONS = { git: "git version 2.47.1", npm: "10.9.2", docker: "Docker version 27.3.1, build ce12230", brew: "Homebrew 4.4.2", sprig: "sprig 0.1.1" };
   const UNKNOWN = {
     git: (s, m) => [err(`git: '${s}' is not a git command. See 'git --help'.`), ...(m ? ["", "The most similar command is", `        ${m}`] : [])],
     npm: (s, m) => [err(`Unknown command: "${s}"`), ...(m ? ["", "Did you mean this?", `    npm ${m}`] : [])],

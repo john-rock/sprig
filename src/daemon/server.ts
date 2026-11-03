@@ -10,7 +10,10 @@ import { clean, decodeField, US } from "./protocol.ts";
 import { flushUsage, recordUse, usageBoost } from "./usage.ts";
 import { log, recordLatency } from "./log.ts";
 
-type Conn = { buf: string; aliases: Record<string, string> };
+// `out` holds bytes the kernel didn't take yet: socket.write() may write only
+// part of a large reply (e.g. 44 grep options > the 8KB unix socket buffer),
+// and a reply without its newline leaves zsh blocked in `read`.
+type Conn = { buf: string; aliases: Record<string, string>; out: Uint8Array | null };
 
 const IDLE_EXIT_MS = 60 * 60_000;
 
@@ -30,7 +33,7 @@ export async function runDaemon(): Promise<void> {
     unix: path,
     socket: {
       open(s) {
-        s.data = { buf: "", aliases: {} };
+        s.data = { buf: "", aliases: {}, out: null };
       },
       data(s, chunk) {
         lastActivity = Date.now();
@@ -41,6 +44,11 @@ export async function runDaemon(): Promise<void> {
           s.data.buf = s.data.buf.slice(nl + 1);
           handle(s, line).catch((e) => log(`error: ${e?.stack ?? e}`));
         }
+      },
+      drain(s) {
+        const pending = s.data.out;
+        s.data.out = null;
+        if (pending) writeAll(s, pending);
       },
     },
   });
@@ -81,7 +89,7 @@ async function handle(s: Socket<Conn>, line: string): Promise<void> {
       if (f[1] && f[2]) recordUse(f[1], f[2]);
       break;
     case "P":
-      s.write(`P${US}${VERSION}\n`);
+      write(s, `P${US}${VERSION}\n`);
       break;
     case "Q":
       process.kill(process.pid, "SIGTERM");
@@ -92,7 +100,27 @@ async function handle(s: Socket<Conn>, line: string): Promise<void> {
 function send(s: Socket<Conn>, id: string, r: Result & { specName?: string }): void {
   const fields = ["R", id, String(r.replaceLen), clean(r.specName ?? "")];
   for (const it of r.items) fields.push(clean(it.display), clean(it.insert), clean(it.description), it.kind);
-  s.write(fields.join(US) + "\n");
+  write(s, fields.join(US) + "\n");
+}
+
+const encoder = new TextEncoder();
+
+function write(s: Socket<Conn>, text: string): void {
+  writeAll(s, encoder.encode(text));
+}
+
+/** Write now what the socket takes; queue the rest for `drain`, keeping order. */
+function writeAll(s: Socket<Conn>, bytes: Uint8Array): void {
+  if (s.data.out) {
+    const joined = new Uint8Array(s.data.out.length + bytes.length);
+    joined.set(s.data.out);
+    joined.set(bytes, s.data.out.length);
+    s.data.out = joined;
+    return;
+  }
+  const n = s.write(bytes);
+  if (n < 0) return; // closed
+  if (n < bytes.length) s.data.out = bytes.subarray(n);
 }
 
 function isAlive(path: string): Promise<boolean> {

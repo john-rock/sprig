@@ -1,0 +1,21 @@
+# Changelog
+
+Each `## <version>` section becomes the GitHub release notes when that version is tagged.
+
+## 0.1.1
+
+### Fixed
+
+- The shell no longer freezes on commands with long option lists, like `grep -`. Replies larger than the socket buffer (about 8 KB on macOS) were cut off, which left zsh waiting for the rest of the line.
+
+### Added
+
+- `sprig update` installs the latest release. It checks the download against the release's `SHA256SUMS`, then switches to the new version and stops the old daemon. Homebrew installs get pointed to `brew upgrade sprig` instead.
+
+### Upgrading from 0.1.0
+
+0.1.0 doesn't have `sprig update`, so reinstall this time with `scripts/install.sh` from a checkout, or with a release tarball: `scripts/install.sh sprig-0.1.1-<os>-<arch>.tar.gz`. After that, `sprig update` handles it.
+
+## 0.1.0
+
+- First version.
