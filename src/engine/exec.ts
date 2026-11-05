@@ -7,6 +7,8 @@ export type ExecContext = {
 
 const MAX_TIMEOUT_MS = 5000;
 
+const stripTrailingNewlines = (s: string) => s.replace(/(\r?\n)+$/, "");
+
 export async function executeCommand(
   input: Fig.ExecuteCommandInput,
   ctx: ExecContext,
@@ -34,7 +36,9 @@ export async function executeCommand(
       new Response(proc.stderr).text(),
       proc.exited,
     ]);
-    return { stdout, stderr, status };
+    // Fig hands generators output without the trailing newline, and specs rely on it:
+    // e.g. git's `remotes` postProcess crashes on the empty last line of `git remote -v`.
+    return { stdout: stripTrailingNewlines(stdout), stderr: stripTrailingNewlines(stderr), status };
   } catch (e) {
     return { stdout: "", stderr: String(e), status: 127 };
   }
