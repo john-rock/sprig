@@ -2,6 +2,12 @@
 
 Each `## <version>` section becomes the GitHub release notes when that version is tagged.
 
+## 0.1.2
+
+### Fixed
+
+- Remote names show up again for `git fetch`, `git push`, `git pull`, `git remote rm` and the rest. Generator scripts now get their output without the trailing newline, as they did under Fig, so specs that split on lines no longer fail on the empty last one.
+
 ## 0.1.1
 
 ### Fixed

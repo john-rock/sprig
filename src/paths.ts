@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 
-export const VERSION = "0.1.1";
+export const VERSION = "0.1.2";
 
 export function stateDir(): string {
   return join(process.env.XDG_STATE_HOME || join(homedir(), ".local", "state"), "sprig");

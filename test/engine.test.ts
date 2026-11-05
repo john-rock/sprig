@@ -116,4 +116,18 @@ describe("completion", () => {
   test("nested subcommand spec via loadSpec", async () => {
     expect(await inserts("docker compose u")).toContain("up ");
   });
+  test("git remotes from a script generator", async () => {
+    // `git remote -v` ends in a newline; the spec's postProcess only works once it's stripped.
+    const repo = mkdtempSync(join(tmpdir(), "sprig-git-"));
+    for (const args of [["init", "-q"], ["remote", "add", "origin", "https://github.com/x/y.git"]]) {
+      expect(Bun.spawnSync(["git", ...args], { cwd: repo }).exitCode).toBe(0);
+    }
+    const remotes = async (line: string) => {
+      const r = await complete(line, { cwd: repo });
+      return (r.more ? await r.more : r).items.map((i) => i.insert);
+    };
+    expect(await remotes("git fetch ")).toContain("origin ");
+    expect(await remotes("git fetch o")).toContain("origin ");
+    expect(await remotes("git push or")).toContain("origin ");
+  });
 });
