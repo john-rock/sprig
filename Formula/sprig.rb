@@ -11,23 +11,23 @@ class Sprig < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-darwin-arm64.tar.gz"
-      sha256 "be10ed28da3f3ef832e98bfecd899f4f5e512e873e5060faa6f45c09c9ffa697"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.3/sprig-0.1.3-darwin-arm64.tar.gz"
+      sha256 "79b89d6c636904db82f199f34189354f61f7a78b7e537cf6f04ef5e1c4da1fa4"
     end
     on_intel do
-      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-darwin-x64.tar.gz"
-      sha256 "0470844b48776fa2a19745247f3eac0f25290a17065e5b77c7b124379ab03e08"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.3/sprig-0.1.3-darwin-x64.tar.gz"
+      sha256 "0d9f3b4f9260baba6e2c4fe4ac05cc347adba1877a38cec1f9334ecd335df5d4"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-linux-arm64.tar.gz"
-      sha256 "cdc77fcc488e2ddb59b78947e09c914856f5a04703a602d6c4b45e9c1a84c53c"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.3/sprig-0.1.3-linux-arm64.tar.gz"
+      sha256 "a410108fa0d9767cf8051054a0294299b4012af68635fe84e08bbcaab987b877"
     end
     on_intel do
-      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-linux-x64.tar.gz"
-      sha256 "8e10ac7ffd3d25498659874e101ec97fcfc1e0ed0b2c8dcc777300eb81cc18fd"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.3/sprig-0.1.3-linux-x64.tar.gz"
+      sha256 "eb2590d7c9e1b54383f613a24de916b47a0d529ec1930af96f5dc9cc6afbc58e"
     end
   end
 
