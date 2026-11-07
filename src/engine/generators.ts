@@ -49,6 +49,12 @@ export function templateSuggestions(
   const foldersOnly = !kinds.includes("filepaths");
   const dir = keep.startsWith("~") ? join(homedir(), keep.slice(1)) : resolve(ctx.cwd, keep || ".");
   const items: Generated[] = [];
+  // `code .` / `cd ..` name a directory already. Offer it first, so Enter
+  // doesn't swap it for the first dotfile that happens to match.
+  if (term === "." || term === "..") {
+    items.push({ keep, suggestion: { name: "./", type: "folder", description: "Current directory", priority: 100 } });
+    items.push({ keep, suggestion: { name: "../", type: "folder", description: "Parent directory", priority: 100 } });
+  }
   let entries: string[] = [];
   try {
     entries = readdirSync(dir);

@@ -104,6 +104,12 @@ describe("completion", () => {
     expect(items).not.toContain(".hidden ");
     expect(await inserts("ls .h")).toContain(".hidden ");
   });
+  test("`.` and `..` keep the directory first instead of a dotfile", async () => {
+    expect((await inserts("code ."))[0]).toBe("./");
+    expect((await inserts("ls .."))[0]).toBe("../");
+    expect(await inserts("ls ..")).not.toContain("./");
+    expect((await inserts("ls src/."))[0]).toBe("src/./");
+  });
   test("paths with spaces are escaped", async () => {
     expect(await inserts("ls my")).toContain("my\\ dir/");
   });
