@@ -307,8 +307,12 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
 <span class="d">$ </span>exec zsh   <span class="c"># or open a new tab</span></pre></div>
       </div>
       <div class="step">
-        <h3>with homebrew <span class="soon">coming soon</span></h3>
-        <p>we're working on it. until then, use the install script or have your agent do it.</p>
+        <h3>with homebrew</h3>
+        <p>this repo is its own tap, so <code>brew tap</code> needs the url. <code>sprig install</code> adds the line to your <code>~/.zshrc</code>, and <code>brew upgrade sprig</code> keeps it current.</p>
+        <div class="code"><button class="copy" data-copy="brew tap john-rock/sprig https://github.com/john-rock/sprig&#10;brew install john-rock/sprig/sprig &amp;&amp; sprig install">copy</button><pre><span class="d">$ </span>brew tap john-rock/sprig \
+    https://github.com/john-rock/sprig
+<span class="d">$ </span>brew install john-rock/sprig/sprig
+<span class="d">$ </span>sprig install</pre></div>
       </div>
       <div class="step agent">
         <h3>have your agent install it</h3>
@@ -445,7 +449,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
         ps: { d: "List containers" } } },
     } },
     brew: { d: "The missing package manager for macOS", subs: {
-      install: { d: "Install a formula or cask" }, upgrade: { d: "Upgrade outdated formulae" },
+      install: { d: "Install a formula or cask" }, tap: { d: "Add a third-party repository of formulae" }, upgrade: { d: "Upgrade outdated formulae" },
       list: { d: "List installed formulae" }, search: { d: "Search for formulae" }, doctor: { d: "Check your system for problems" },
       services: { d: "Manage background services", subs: { start: { d: "Start a service now and at login", args: "services" }, stop: { d: "Stop a service", args: "services" }, list: { d: "List all services" } } },
     } },
@@ -490,7 +494,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     mod: ["src/cli.ts", "shell/sprig.zsh"], staged: [], stash: [],
     images: [["sprig-api", "latest", "3f9a2c1e8b07", "212MB"], ["sprig-web", "latest", "8c1d04b2a9e3", "98MB"], ["postgres", "16", "b9a6d1f0c4e2", "438MB"]],
     formulae: ["bun", "fzf", "gh", "git", "jq", "postgresql@16", "redis", "ripgrep", "zsh"],
-    svc: { "postgresql@16": "none", redis: "started" },
+    svc: { "postgresql@16": "none", redis: "started" }, tapped: false,
     fs: {
       "~": [".config/", ".zshrc", "dev/"], "~/.config": ["sprig/"], "~/.config/sprig": ["specs/"], "~/.config/sprig/specs": [],
       "~/dev": ["sprig/"],
@@ -1031,12 +1035,24 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
       const names = pos(rest);
       if (!names.length) return [err("Error: Invalid usage: This command requires at least 1 formula or cask argument.")];
       return names.flatMap(f => {
-        if (f === "sprig" || f.endsWith("/sprig")) return [err(`Error: No available formula with the name "${f}".`), dim("the tap is coming soon. scripts/install.sh works today 🌿")];
+        if (f === "sprig" || f.endsWith("/sprig")) {
+          if (!st.tapped) return [err(`Error: No available formula with the name "${f}".`), dim("tap it first: brew tap john-rock/sprig https://github.com/john-rock/sprig")];
+          return [arrow("Downloading https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-darwin-arm64.tar.gz"), W(700), "🍺  /opt/homebrew/Cellar/sprig/0.1.2", arrow("Caveats"), "Finish setup with:", "  sprig install", "then open a new terminal tab.", dim("(you're already using it, though 🌿)")];
+        }
         if (st.formulae.includes(f)) return [dim(`Warning: ${f} is already installed and up-to-date.`)];
         if (!FORMULAE.includes(f)) { const m = closest(f, FORMULAE); return [err(`Error: No available formula with the name "${f}".${m ? ` Did you mean ${m}?` : ""}`)]; }
         st.formulae.push(f); st.formulae.sort();
         return [arrow(`Downloading https://ghcr.io/v2/homebrew/core/${f}/manifests/latest`), W(600), arrow(`Pouring ${f}--1.0.0.arm64_sequoia.bottle.tar.gz`), W(500), `🍺  /opt/homebrew/Cellar/${f}/1.0.0: 42 files, 3.1MB`];
       });
+    },
+    tap: rest => {
+      const [name, url] = pos(rest);
+      if (!name) return [st.tapped ? "john-rock/sprig" : "", "homebrew/services"].filter(Boolean);
+      if (name !== "john-rock/sprig") return [err(`Error: Failure while executing; \`git clone https://github.com/${name.replace("/", "/homebrew-")}\` exited with 128.`)];
+      if (!url) return [arrow("Tapping john-rock/sprig"), W(500), err("fatal: repository 'https://github.com/john-rock/homebrew-sprig/' not found"), dim("this repo is its own tap. add the url: brew tap john-rock/sprig https://github.com/john-rock/sprig")];
+      if (st.tapped) return [];
+      st.tapped = true;
+      return [arrow("Tapping john-rock/sprig"), "Cloning into '/opt/homebrew/Library/Taps/john-rock/homebrew-sprig'...", W(600), "Tapped 1 formula."];
     },
     upgrade: () => {
       if (st.upgraded) return [];

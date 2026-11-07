@@ -10,17 +10,20 @@ IDE-style autocomplete for zsh, like Fig used to be. As you type, a dropdown und
 
 ## Install
 
+With Homebrew:
+
+```sh
+brew tap john-rock/sprig https://github.com/john-rock/sprig
+brew install john-rock/sprig/sprig && sprig install
+```
+
+This repo is its own tap, so the `brew tap` line needs the URL. Without it, Homebrew looks for a `homebrew-sprig` repo, which doesn't exist.
+
 From this checkout (needs [Bun](https://bun.sh) to build):
 
 ```sh
 scripts/install.sh      # builds, installs to ~/.local/share/sprig, links ~/.local/bin/sprig, adds one line to ~/.zshrc
 exec zsh                # or open a new tab
-```
-
-With Homebrew, once a tap is published (see `Formula/sprig.rb`):
-
-```sh
-brew install john-rock/sprig/sprig && sprig install
 ```
 
 `sprig install` backs up `~/.zshrc` and appends a marked block at the end. `sprig uninstall` removes it and stops the daemon.
@@ -85,9 +88,10 @@ scripts/build.sh                             # release tarballs in dist/
 
 ### Releasing
 
-1. Bump `VERSION` in `src/paths.ts` (and `package.json`, `Formula/sprig.rb`), and add a `## <version>` section to `CHANGELOG.md`.
+1. Bump `VERSION` in `src/paths.ts` (and `package.json`), and add a `## <version>` section to `CHANGELOG.md`.
 2. Merge to `main`, then tag it: `git tag v<version> && git push origin v<version>`.
 3. The `Release` workflow checks that the tag matches `VERSION`, runs the tests, builds the tarballs and publishes a GitHub release with that changelog section as its notes. `sprig update` picks it up from there.
+4. Once the release is up, run `scripts/update-formula.sh <version>`, then commit `Formula/sprig.rb` and push it to `main`. The script fills in the checksums from the release's `SHA256SUMS`, which don't exist until step 3, so this comes after the tag. Until it's pushed, `brew upgrade` stays on the previous version.
 
 Bump the version for every release: each version gets its own daemon socket, which is what moves running shells off the old daemon.
 
