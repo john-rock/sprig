@@ -7,34 +7,33 @@
 class Sprig < Formula
   desc "Fig-style IDE autocomplete for zsh, powered by Fig's completion specs"
   homepage "https://github.com/john-rock/sprig"
-  version "0.1.2"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/john-rock/sprig/releases/download/v#{version}/sprig-#{version}-darwin-arm64.tar.gz"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-darwin-arm64.tar.gz"
       sha256 "be10ed28da3f3ef832e98bfecd899f4f5e512e873e5060faa6f45c09c9ffa697"
     end
     on_intel do
-      url "https://github.com/john-rock/sprig/releases/download/v#{version}/sprig-#{version}-darwin-x64.tar.gz"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-darwin-x64.tar.gz"
       sha256 "0470844b48776fa2a19745247f3eac0f25290a17065e5b77c7b124379ab03e08"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/john-rock/sprig/releases/download/v#{version}/sprig-#{version}-linux-arm64.tar.gz"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-linux-arm64.tar.gz"
       sha256 "cdc77fcc488e2ddb59b78947e09c914856f5a04703a602d6c4b45e9c1a84c53c"
     end
     on_intel do
-      url "https://github.com/john-rock/sprig/releases/download/v#{version}/sprig-#{version}-linux-x64.tar.gz"
+      url "https://github.com/john-rock/sprig/releases/download/v0.1.2/sprig-0.1.2-linux-x64.tar.gz"
       sha256 "8e10ac7ffd3d25498659874e101ec97fcfc1e0ed0b2c8dcc777300eb81cc18fd"
     end
   end
 
   def install
     bin.install "bin/sprig"
-    (share/"sprig").install "share/sprig/specs"
+    pkgshare.install "share/sprig/specs"
     doc.install Dir["share/doc/sprig/*"]
   end
 

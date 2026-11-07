@@ -39,34 +39,33 @@ cat >"$tmp" <<EOF
 class Sprig < Formula
   desc "Fig-style IDE autocomplete for zsh, powered by Fig's completion specs"
   homepage "https://github.com/$repo"
-  version "$version"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/$repo/releases/download/v#{version}/sprig-#{version}-darwin-arm64.tar.gz"
+      url "https://github.com/$repo/releases/download/v$version/sprig-$version-darwin-arm64.tar.gz"
       sha256 "$darwin_arm64"
     end
     on_intel do
-      url "https://github.com/$repo/releases/download/v#{version}/sprig-#{version}-darwin-x64.tar.gz"
+      url "https://github.com/$repo/releases/download/v$version/sprig-$version-darwin-x64.tar.gz"
       sha256 "$darwin_x64"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/$repo/releases/download/v#{version}/sprig-#{version}-linux-arm64.tar.gz"
+      url "https://github.com/$repo/releases/download/v$version/sprig-$version-linux-arm64.tar.gz"
       sha256 "$linux_arm64"
     end
     on_intel do
-      url "https://github.com/$repo/releases/download/v#{version}/sprig-#{version}-linux-x64.tar.gz"
+      url "https://github.com/$repo/releases/download/v$version/sprig-$version-linux-x64.tar.gz"
       sha256 "$linux_x64"
     end
   end
 
   def install
     bin.install "bin/sprig"
-    (share/"sprig").install "share/sprig/specs"
+    pkgshare.install "share/sprig/specs"
     doc.install Dir["share/doc/sprig/*"]
   end
 
