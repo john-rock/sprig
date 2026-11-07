@@ -2,6 +2,12 @@
 
 Each `## <version>` section becomes the GitHub release notes when that version is tagged.
 
+## 0.1.3
+
+### Fixed
+
+- `code .`, `cd ..` and the like run as typed again. When the word was just `.` or `..`, the dropdown listed only dotfiles, so Enter replaced it with the first one (`code .gitignore`). Now `./` and `../` are offered first.
+
 ## 0.1.2
 
 ### Fixed

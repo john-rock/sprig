@@ -1,19 +1,31 @@
-# Push a tag like v0.1.1 to build the tarballs and publish a GitHub release.
-# The tag must match VERSION in src/paths.ts; the notes come from that
-# version's section in CHANGELOG.md.
+# Publishes a release whenever VERSION in src/paths.ts names a version that
+# hasn't been released yet, then points Formula/sprig.rb at it.
+#
+# Normal flow: bump VERSION, add a `## <version>` section to CHANGELOG.md,
+# merge to main. This workflow tags the merge commit, builds the tarballs,
+# publishes the GitHub release (notes from that CHANGELOG section) and commits
+# the updated formula to main. Pushing a tag like v0.1.3 by hand still works.
 name: Release
 
 on:
   push:
+    branches: [main]
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     # Bun cross-compiles every target from here; the darwin builds are native.
     runs-on: macos-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
@@ -21,16 +33,24 @@ jobs:
         with:
           bun-version: 1.4.4
 
-      - name: Check the tag matches VERSION
+      - name: Read VERSION and decide whether to release
+        id: check
         run: |
           version=$(bun -e 'console.log((await import("./src/paths.ts")).VERSION)')
-          if [[ "v$version" != "$GITHUB_REF_NAME" ]]; then
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          if [[ $GITHUB_REF_TYPE == tag && "v$version" != "$GITHUB_REF_NAME" ]]; then
             echo "::error::tag $GITHUB_REF_NAME doesn't match VERSION $version in src/paths.ts"
             exit 1
           fi
-          echo "VERSION=$version" >> "$GITHUB_ENV"
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version is already released; nothing to do."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Extract release notes
+        if: steps.check.outputs.publish == 'true'
         run: |
           awk -v v="$VERSION" '
             $0 ~ "^## " { if (found) exit; if ($2 == v) { found = 1; next } }
@@ -41,16 +61,40 @@ jobs:
             exit 1
           fi
 
-      - run: bun install --frozen-lockfile
+      - if: steps.check.outputs.publish == 'true'
+        run: bun install --frozen-lockfile
 
-      - run: bun test
+      - if: steps.check.outputs.publish == 'true'
+        run: bun test
 
       - name: Build tarballs
+        if: steps.check.outputs.publish == 'true'
         run: scripts/build.sh
 
       - name: Publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
+        if: steps.check.outputs.publish == 'true'
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/*.tar.gz dist/SHA256SUMS \
-            --title "sprig $VERSION" --notes-file notes.md
+          # --target tags this commit when the tag doesn't exist yet (the merge-to-main path).
+          gh release create "v$VERSION" dist/*.tar.gz dist/SHA256SUMS \
+            --target "$GITHUB_SHA" --title "sprig $VERSION" --notes-file notes.md
+
+      - name: Update the Homebrew formula on main
+        if: steps.check.outputs.publish == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B main origin/main
+          scripts/update-formula.sh "$VERSION"
+          if git diff --quiet -- Formula/sprig.rb; then
+            echo "Formula already points at $VERSION."
+            exit 0
+          fi
+          git commit -m "Formula: sprig $VERSION" -- Formula/sprig.rb
+          # main may have moved while we built; rebase and retry a few times.
+          for attempt in 1 2 3; do
+            git push origin main && exit 0
+            git pull --rebase origin main
+          done
+          echo "::error::couldn't push the formula update to main"
+          exit 1

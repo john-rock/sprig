@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Point Formula/sprig.rb at a published release: scripts/update-formula.sh 0.1.2
 #
-# This repo doubles as the Homebrew tap, so run this after the Release workflow
-# has published v<version>, then commit and push Formula/sprig.rb to main.
+# This repo doubles as the Homebrew tap. The Release workflow runs this and
+# commits the result to main after it publishes v<version>; run it by hand only
+# to repair the formula.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
