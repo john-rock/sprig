@@ -89,9 +89,11 @@ scripts/build.sh                             # release tarballs in dist/
 ### Releasing
 
 1. Bump `VERSION` in `src/paths.ts` (and `package.json`), and add a `## <version>` section to `CHANGELOG.md`.
-2. Merge to `main`, then tag it: `git tag v<version> && git push origin v<version>`.
-3. The `Release` workflow checks that the tag matches `VERSION`, runs the tests, builds the tarballs and publishes a GitHub release with that changelog section as its notes. `sprig update` picks it up from there.
-4. Once the release is up, run `scripts/update-formula.sh <version>`, then commit `Formula/sprig.rb` and push it to `main`. The script fills in the checksums from the release's `SHA256SUMS`, which don't exist until step 3, so this comes after the tag. Until it's pushed, `brew upgrade` stays on the previous version.
+2. Merge to `main`. That's it.
+
+The `Release` workflow runs on every push to `main`. When `VERSION` names a version with no GitHub release yet, it runs the tests, builds the tarballs, tags the commit `v<version>` and publishes the release with that changelog section as its notes; `sprig update` picks it up from there. It then runs `scripts/update-formula.sh <version>` and commits the new `Formula/sprig.rb` to `main`, so `brew upgrade` sees it too. Pushes that don't change `VERSION` do nothing.
+
+If the workflow fails partway, fix the cause and re-run it from the Actions tab (or `gh workflow run Release`). Pushing a `v<version>` tag by hand also still triggers it.
 
 Bump the version for every release: each version gets its own daemon socket, which is what moves running shells off the old daemon.
 
