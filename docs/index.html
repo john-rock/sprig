@@ -74,6 +74,12 @@ a { color: var(--leaf); text-underline-offset: 3px; }
 code, kbd, pre { font-family: var(--f-mono); }
 :focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
 
+/* ---------- announce banner ---------- */
+.announce { margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))); background: var(--leaf-soft); border-bottom: 1px solid var(--rule); color: var(--ink); font-size: .9rem; }
+.announce-in { max-width: 920px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 14px; text-align: center; }
+.announce a { font-weight: 600; text-decoration: none; white-space: nowrap; }
+.announce a:hover { text-decoration: underline; }
+
 /* ---------- hero ---------- */
 .hero { display: grid; gap: 28px; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -246,6 +252,12 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
 </style>
 </head>
 <body>
+<div class="announce" role="region" aria-label="Announcement">
+  <div class="announce-in">
+    <span>🍺 sprig is now available on homebrew.</span>
+    <a href="#install">get it →</a>
+  </div>
+</div>
 <div class="wrap">
   <header class="hero">
     <div class="top">
