@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>sprig</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 <meta name="description" content="autocomplete for zsh, like fig used to be. a dropdown under your cursor for 700+ cli tools.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -301,18 +302,19 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     <h2>install it</h2>
     <div class="install">
       <div class="step">
-        <h3>from this checkout</h3>
-        <p>you'll need <a href="https://bun.sh" target="_blank" rel="noopener">bun</a> to build it. it installs to <code>~/.local/share/sprig</code> and adds one line to your <code>~/.zshrc</code>. <code>sprig uninstall</code> takes it back out.</p>
-        <div class="code"><button class="copy" data-copy="scripts/install.sh&#10;exec zsh">copy</button><pre><span class="d">$ </span>scripts/install.sh
-<span class="d">$ </span>exec zsh   <span class="c"># or open a new tab</span></pre></div>
-      </div>
-      <div class="step">
-        <h3>with homebrew</h3>
-        <p>this repo is its own tap, so <code>brew tap</code> needs the url. <code>sprig install</code> adds the line to your <code>~/.zshrc</code>, and <code>brew upgrade sprig</code> keeps it current.</p>
+        <h3>with homebrew <span class="soon">recommended</span></h3>
+        <p>the easiest way in. this repo is its own tap, so <code>brew tap</code> needs the url. <code>sprig install</code> adds one line to your <code>~/.zshrc</code>, and <code>brew upgrade sprig</code> keeps it current.</p>
         <div class="code"><button class="copy" data-copy="brew tap john-rock/sprig https://github.com/john-rock/sprig&#10;brew install john-rock/sprig/sprig &amp;&amp; sprig install">copy</button><pre><span class="d">$ </span>brew tap john-rock/sprig \
     https://github.com/john-rock/sprig
 <span class="d">$ </span>brew install john-rock/sprig/sprig
 <span class="d">$ </span>sprig install</pre></div>
+      </div>
+      <div class="step">
+        <h3>from source</h3>
+        <p>no homebrew? you'll need <a href="https://bun.sh" target="_blank" rel="noopener">bun</a> to build it. it installs to <code>~/.local/share/sprig</code> and adds one line to your <code>~/.zshrc</code>. <code>sprig uninstall</code> takes it back out.</p>
+        <div class="code"><button class="copy" data-copy="git clone https://github.com/john-rock/sprig &amp;&amp; cd sprig&#10;scripts/install.sh&#10;exec zsh">copy</button><pre><span class="d">$ </span>git clone https://github.com/john-rock/sprig
+<span class="d">$ </span>cd sprig &amp;&amp; scripts/install.sh
+<span class="d">$ </span>exec zsh   <span class="c"># or open a new tab</span></pre></div>
       </div>
       <div class="step agent">
         <h3>have your agent install it</h3>
@@ -914,7 +916,7 @@ footer { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--rul
     "": () => ["npm <command>", "", dim("npm install        install the dependencies"), dim("npm run <script>   run a script from package.json"), dim("npm test           run the tests")],
     install: rest => {
       const pkgs = pos(rest);
-      if (pkgs.includes("sprig")) return [dim("sprig isn't on npm. it installs with scripts/install.sh."), ok("(you're already using it, though 🌿)")];
+      if (pkgs.includes("sprig")) return [dim("sprig isn't on npm. it installs with brew install john-rock/sprig/sprig."), ok("(you're already using it, though 🌿)")];
       if (!pkgs.length && !hasPkg()) return noPkg();
       const n = pkgs.length ? pkgs.length : 214;
       return [W(600), `added ${plural(n, "package")}, and audited ${n + 1} packages in ${pkgs.length ? 1 : 3}s`, ok("found 0 vulnerabilities")];
